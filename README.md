@@ -18,7 +18,7 @@ Define a word.  The first token after the colon sets the name of the word.  Nest
 : [wordname] ... ; (ex. ': get-caster .pattern north_east qaq ;')
 
 Create a list iota.  Any words within the list are expanded in place.  Nested lists are supported.  Lists and nested lists can be defined inside words.
-{ ... } (ex. '{ 1 2 3 } or { word1 word2 word3 } or { 1 2 { 3 4 5 } }'
+{ ... } (ex. '{ 1 2 3 }' or '{ word1 word2 word3 }' or '{ 1 2 { 3 4 5 } }')
 
 Emit the contents of a word.
 [string] (ex. 'wordname' or '"word name with whitespace"')
