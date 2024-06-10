@@ -87,7 +87,7 @@ local directives = {
 		end
 	end,
 	
-	["param-port"] = function(self) -- Read an iota from a Ducky's Peripherals focal port (emit with $name): .param-iota name promot
+	["param-port"] = function(self) -- Read an iota from a Ducky's Peripherals focal port (emit with $name): .param-port name promot
 		error(".param-port TBI")
 	end
 	
@@ -162,7 +162,7 @@ function Compiler:compile(targetFileName, targetDirectories)
 				if (not word) then tokenErr("Unknown word '"..wordName.."'", nextToken) end
 				if (self._compilingList) then
 					for i=1,#word do
-						table.insert(self._compilingList, textutils.unserialize(textutils.serialize(word[i])))
+						table.insert(self._compilingList, textutils.unserialize(textutils.serialize(word[i]))) -- Lazy deep copy
 					end
 				else
 					for i=1,#word do
@@ -173,10 +173,7 @@ function Compiler:compile(targetFileName, targetDirectories)
 		else
 			error("Invalid token type: "..type(nextToken.value))
 		end
-		
-		
 	end
-	
 end
 
 function Compiler:_runDirective(dirTkn)
@@ -184,17 +181,6 @@ function Compiler:_runDirective(dirTkn)
 	local dirFunc = directives[dirName]
 	if (dirFunc == nil) then error("Invalid compiler directive '"..dirName.."' ("..dirTkn.file..", line "..dirTkn.line..")", 0) end
 	dirFunc(self, dirTkn)
-end
-
--- Words consist of other words, lists, and iota objects.  Iota objects and lists are directly emitted.  Inner words are expanded recursively.
-function Compiler:expandWord(word)
-	if (self._compilingList) then
-		
-	else
-		self:expandWord(tokenizer:next())
-	end
-
-	
 end
 
 local function duckyEmit(iota, list)
@@ -237,16 +223,17 @@ function Compiler:emit(mode, target)
 			error("Focal port write failed")
 		end
 	elseif (mode == Compiler.EmitMode.DuckyFocalPortSingle) then
-		
+		local duckyList = {}
+		duckyEmit(self._emitList[1], duckyList)
+		if (target == nil or (not target.writeIota) or (not target.hasFocus)) then error("Provide a focal port peripheral", 2) end
+		if (not target.hasFocus()) then error("Target focal port is empty", 0) end
+		if (target.writeIota(duckyList[1])) then
+			print("Iota written to focal port")
+		else
+			error("Focal port write failed")
+		end
 	end
-	
 end
-
-
-
-
-
-
 
 local _meta = { __index = Compiler }
 
