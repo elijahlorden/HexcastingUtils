@@ -1,8 +1,35 @@
-123
--123
-//sss
-0xff
-"string"
 
+: get-caster //( - entity)
+	.pattern north_east qaq //Mind's Reflection
+; 
 
+: entity-position //(entity - vector)
+	.pattern east aa //Compass' Purification 
+;
+
+: entity-lookvector //(entity - vector)
+	.pattern east wa //Alidade's Purification
+;
+
+: raycast-block //(vector vector - vector)
+	.pattern east wqaawdd //Archer's Distillation
+;
+
+: reveal //(any - any)
+	.pattern north_east de //Reveal
+;
+
+: drop //(any - )
+	.pattern south_east a //Bookkeeper's Gambit (drop)
+;
+
+: caster-raycast-block //( - vector)
+	get-caster entity-position
+	get-caster entity-lookvector
+	raycast-block
+;
+
+caster-raycast-block
+reveal
+drop
 
