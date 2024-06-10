@@ -5,7 +5,7 @@ Copy contents into a Computercraft computer, place a focal port from Ducky's Per
 
 HexForth (.xth) language syntax
 
-Emit a number iota:
+Emit a number iota.  Currently you can't emit number patterns, this may be added later.
 [number] (ex. '1')
 
 Emit a string iota:
@@ -22,6 +22,21 @@ Create a list iota.  Any words within the list are expanded in place.  Nested li
 
 Emit the contents of a word.
 [string] (ex. 'wordname' or '"word name with whitespace"')
+
+Import another source file.  File must be within one of the directories passed to Compiler.new()
+.import [filename]
+
+Define a parameter.  The user will be prompted to enter a value.  Currently only strings and numbers are supported.
+.param [paramname] [prompt] (ex. '.param strength "Enter explosion strength"')
+
+Emit a parameter:
+$[paramname] (ex. '$strength')
+
+Comments:
+
+//Line comment
+
+/* Block comment */
 
 More to come eventually.
 
