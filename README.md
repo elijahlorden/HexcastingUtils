@@ -14,6 +14,9 @@ Emit a string iota:
 Emit a pattern iota:
 .pattern [direction] [angles] (ex. '.pattern north_east qaq')
 
+Emit a vector iota:
+.vector [x] [y] [z] (ex. '.vector 0 65 0')
+
 Define a word.  The first token after the colon sets the name of the word.  Nested words are not supported.
 : [wordname] ... ; (ex. ': get-caster .pattern north_east qaq ;')
 

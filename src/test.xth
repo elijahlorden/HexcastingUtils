@@ -1,10 +1,16 @@
 
+// === Basic Patterns ===
+
 : get-caster //( - entity)
 	.pattern north_east qaq //Mind's Reflection
 ; 
 
 : entity-position //(entity - vector)
 	.pattern east aa //Compass' Purification 
+;
+
+: entity-position-feet //(entity - vector)
+	.pattern north_east aa //Compass' Purification 2
 ;
 
 : entity-lookvector //(entity - vector)
@@ -15,13 +21,104 @@
 	.pattern east wqaawdd //Archer's Distillation
 ;
 
+: raycast-block-face //(vector vector - vector)
+	.pattern east weddwaa //Architect's Distillation
+;
+
+: raycast-entity //(vector vector - entity)
+	.pattern east weaqa //Scout's Distillation
+;
+
 : reveal //(any - any)
 	.pattern north_east de //Reveal
+;
+
+: entity-height //(entity - number)
+	.pattern north_east awq //Stadiometer's Purification
+;
+
+: entity-velocity //(entity - vector)
+	.pattern east wq //Pace Purification
 ;
 
 : drop //(any - )
 	.pattern south_east a //Bookkeeper's Gambit (drop)
 ;
+
+// === Mathematics ===
+
+: add //(number|vector number|vector - number|vector)
+	.pattern north_east waaw //Additive Distillation
+;
+
+: sub //(number|vector number|vector - number|vector)
+	.pattern north_west wddw //Subtractive Distillation
+;
+
+: mul //(number|vector number|vector - number|vector)
+	.pattern south_east waqaw //Multiplicative Distillation
+;
+
+: div //(number|vector number|vector - number|vector)
+	.pattern north_east wdedw //Division Distillation
+;
+
+: abs //(number - number)
+	.pattern north_east wqaqw //Length Purification
+;
+
+: vector-length //(vector - number)
+	.pattern north_east wqaqw //Length Purification
+;
+
+: pow //(number|vector number|vector - number|vector)
+	.pattern north_west wedew //Power Distillation
+;
+
+: floor //(number - number)
+	.pattern east ewq //Floor Purification
+;
+
+: ceil //(number - number)
+	.pattern east qwe //Floor Purification
+;
+
+: create-vector //(number number number - vector)
+	.pattern east eqqqqq //Vector Exaltation
+;
+
+: expand-vector //(vector - number number number)
+	.pattern east qeeeee //Vector Disintegration
+;
+
+: mod //(number number - number)
+	.pattern north_east addwaad //Modulus Distillation
+;
+
+: vector-axis //(vector - vector)
+	.pattern north_west qqqqqaww //Axial Purification
+;
+
+: random //( - number)
+	.pattern north_west eqqq //Entropy Reflection
+;
+
+// === Patterns as Iotas
+
+: push-iota //( - any)
+	.pattern west qqqaw //Consideration
+;
+
+: ( //( - )
+	.pattern west qqq //Introspection
+;
+
+: ) //( - list)
+	.pattern east eee //Retrospection
+;
+
+
+// === Common Words ===
 
 : caster-raycast-block //( - vector)
 	get-caster entity-position
@@ -29,7 +126,18 @@
 	raycast-block
 ;
 
-caster-raycast-block
-reveal
+: caster-raycast-block-face //( - vector)
+	get-caster entity-position
+	get-caster entity-lookvector
+	raycast-block-face
+;
+
+: caster-raycast-entity //( - vector)
+	get-caster entity-position
+	get-caster entity-lookvector
+	raycast-entity
+;
+
+get-caster entity-lookvector vector-axis
 
 

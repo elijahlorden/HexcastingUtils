@@ -29,7 +29,7 @@ local directives = {
 		-- Get and validate direction
 		local tkn, err = self._tokenizer:next()
 		if (err) then error(err, 0) end
-		if (not tkn) then tokenErr(".pattern expected string, got nil", tkn) end
+		if (not tkn) then tokenErr(".pattern expected string, got nil", dirTkn) end
 		local direction = tkn.value
 		if (type(direction) ~= "string") then tokenErr(".pattern expected string, got "..type(direction), tkn) end
 		direction = direction:lower()
@@ -52,8 +52,27 @@ local directives = {
 	["str"] = function(self, dirTkn) -- .str [string|"string with whitespace"]
 		local tkn, err = self._tokenizer:next()
 		if (err) then error(err, 0) end
-		if (not tkn) then tokenErr(".pattern expected string or number, got nil", tkn) end
+		if (not tkn) then tokenErr(".pattern expected string or number, got nil", dirTkn) end
 		local iota = { iType = "string", value = tostring(tkn.value), token = dirTkn }
+		if (self._compilingList) then
+			table.insert(self._compilingList, iota)
+		else
+			table.insert(self._emitList, iota)
+		end
+	end,
+	
+	["vector"] = function(self, dirTkn) -- .vector x y z
+		local vec = {}
+		for i=1,3 do
+			local tkn, err = self._tokenizer:next()
+			if (err) then error(err, 0) end
+			if (not tkn) then tokenErr(".vector expected number, got nil", dirTkn) end
+			local n = tkn.value
+			if (type(n) ~= "number") then tokenErr(".vector expected number, got "..type(n), tkn) end
+			vec[i] = n
+		end
+		
+		local iota = { iType = "vector", value = vec, token = dirTkn }
 		if (self._compilingList) then
 			table.insert(self._compilingList, iota)
 		else
@@ -66,14 +85,14 @@ local directives = {
 		-- Get and validate param name
 		local tkn, err = self._tokenizer:next()
 		if (err) then error(err, 0) end
-		if (not tkn) then tokenErr(".param expected string, got nil", tkn) end
+		if (not tkn) then tokenErr(".param expected string, got nil", dirTkn) end
 		local paramName = tkn.value
 		if (type(paramName) ~= "string") then tokenErr(".param expected string, got "..type(paramName), tkn) end
 		if (self._params[paramName]) then tokenErr("A parameter with the name '"..paramName.."' already exists", tkn) end
 		-- Get and validate param prompt
 		tkn, err = self._tokenizer:next()
 		if (err) then error(err, 0) end
-		if (not tkn) then tokenErr(".param expected string, got nil", tkn) end
+		if (not tkn) then tokenErr(".param expected string, got nil", dirTkn) end
 		local paramPrompt = tkn.value
 		if (type(paramPrompt) ~= "string") then tokenErr(".param expected string, got "..type(paramPrompt), tkn) end
 		-- Prompt
@@ -192,6 +211,8 @@ local function duckyEmit(iota, list)
 		table.insert(list, { startDir = iota.startDir:upper(), angles = iota.angles })
 	elseif (iota.iType == "number" or iota.iType == "string") then
 		table.insert(list, iota.value)
+	elseif (iota.iType == "vector") then
+		table.insert(list, { x = iota.value[1], y = iota.value[2], z = iota.value[3] })
 	else
 		if (iota.token) then
 			tokenErr("Iota type '"..iota.iType.."' is not supported for DuckyFocalPort emit", iota.token)
