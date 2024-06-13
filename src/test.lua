@@ -1,4 +1,4 @@
-local Compiler = require("HexUtils/lib/Compiler")
+local Compiler = require("HexUtils/Compiler")
 
 local compiler = Compiler.new()
 compiler:compile("test.xth", { "/" })

@@ -1,5 +1,7 @@
 
-// === Basic Patterns ===
+
+// ================ Basic Patterns ================ \\
+
 
 : get-caster //( - entity)
 	.pattern north_east qaq //Mind's Reflection
@@ -41,11 +43,8 @@
 	.pattern east wq //Pace Purification
 ;
 
-: drop //(any - )
-	.pattern south_east a //Bookkeeper's Gambit (drop)
-;
+// ================ Mathematics ================ \\
 
-// === Mathematics ===
 
 : add //(number|vector number|vector - number|vector)
 	.pattern north_east waaw //Additive Distillation
@@ -83,11 +82,11 @@
 	.pattern east qwe //Floor Purification
 ;
 
-: create-vector //(number number number - vector)
+: vector-wrap //(number number number - vector)
 	.pattern east eqqqqq //Vector Exaltation
 ;
 
-: expand-vector //(vector - number number number)
+: vector-unwrap //(vector - number number number)
 	.pattern east qeeeee //Vector Disintegration
 ;
 
@@ -103,7 +102,354 @@
 	.pattern north_west eqqq //Entropy Reflection
 ;
 
-// === Patterns as Iotas
+
+// ================ Constants ================ \\
+
+
+: true //( - bool)
+	.pattern south_east aqae //True Reflection
+;
+
+: false //( - bool)
+	.pattern north_east dedq //False Reflection
+;
+
+: null //( - null)
+	.pattern east d //Nullary Reflection
+;
+
+: create-vector-zero //( - vector)
+	.pattern north_west qqqqq //Vector Reflection Zero
+;
+
+: create-vector-pos-x //( - vector)
+	.pattern north_west qqqqqea //Vector Reflection +X
+;
+
+: create-vector-neg-x //( - vector)
+	.pattern north_east eeeeeqa //Vector Reflection -X
+;
+
+: create-vector-pos-y //( - vector)
+	.pattern north_west qqqqqew //Vector Reflection +Y
+;
+
+: create-vector-neg-y //( - vector)
+	.pattern north_east eeeeeqw //Vector Reflection -Y
+;
+
+: create-vector-pos-z //( - vector)
+	.pattern north_west qqqqqed //Vector Reflection +Z
+;
+
+: create-vector-neg-z //( - vector)
+	.pattern north_east eeeeeqd //Vector Reflection -Z
+;
+
+: const-tau //( - number)
+	.pattern north_west eawae //Circle's Reflection
+;
+
+: const-pi //( - number)
+	.pattern north_east qdwdq //Arc's Reflection
+;
+
+: const-e //( - number)
+	.pattern east aaq //Euler's Reflection
+;
+
+
+// ================ Stack Manipulation ================ \\
+
+
+: drop //(any - )
+	.pattern east a //Novice's Gambit
+;
+
+: swap //(a b - b a)
+	.pattern east aawdd //Jester's Gambit
+;
+
+: rot //(a b c - b c a)
+	.pattern east aaeaa //Rotation Gambit
+;
+
+: rrot //(a b c - c a b)
+	.pattern north_east ddqdd //Rotation Gambit 2
+;
+
+: dup //(a - a a)
+	.pattern east aadaa //Gemini Decomposition
+;
+
+: over //(a b - a b a)
+	.pattern east aaedd //Prospector's Gambit
+;
+
+: tuck //(a b - b a b)
+	.pattern east ddqaa //Undertaker's Gambit
+;
+
+: rep //(any number - many)
+	.pattern east aadaadaa //Gemini Gambit
+;
+
+: 2dup //(a b - a b a b)
+	.pattern east aadadaaw //Dioscuri Gambit
+;
+
+: get-stack-size //( - number)
+	.pattern north_west qwaeawqaeaqa //Flock's Reflection
+;
+
+: cut-iota //(number - any)
+	.pattern west ddad //Fisherman's Gambit
+;
+
+: copy-iota //(number - any)
+	.pattern east aada //Fisherman's Gambit 2
+;
+
+: stack-permute //(many - many)
+	.pattern south_east qaawdde //Swindler's Gambit
+;
+
+: 2swap //(a b c d - c d a b)
+	.pattern south_east aqaaqawq //Numeric Reflection: 16
+	stack-permute
+;
+
+
+// ================ Logical Operators ================ \\
+
+
+: any-to-bool //(any - bool)
+
+;
+
+: bool-to-number //(bool - number)
+
+;
+
+: not //(bool - bool)
+
+;
+
+: or //(bool bool - bool)
+
+;
+
+: and //(bool bool - bool)
+
+;
+
+: xor //(bool bool - bool)
+
+;
+
+: ? //(bool any(true) any(false) - any)
+
+;
+
+: ?eq //(any any - bool)
+
+;
+
+: ?neq //(any any - bool)
+
+;
+
+: ?gt //(number number - bool)
+
+;
+
+: ?lt //(number number - bool)
+
+;
+
+: ?geq //(number number - bool)
+
+;
+
+: ?leq //(number number - bool)
+
+;
+
+
+// ================ Types (Hexal) ================ \\
+
+
+: hexal:get-iota-type //(any - iotatype)
+
+;
+
+: hexal:get-entity-type //(entity - entitytype)
+
+;
+
+: hexal:get-item-type //(itemtypable - itemtype)
+
+;
+
+: hexal:get-hand-type //( - itemtype)
+
+;
+
+: hexal:get-entity-of-type //(entitytype vector - entity|null)
+
+;
+
+: hexal:get-entities-of-type //(entitytype vector number - [entity])
+
+;
+
+: hexal:get-entities-not-of-type //(entitytype vector number - [entity])
+
+;
+
+
+// ================ Entity Purification ================ \\
+
+
+: get-entity //(vector - entity|null)
+
+;
+
+: get-entity-animal //(vector - entity|null)
+
+;
+
+: get-entity-monster //(vector - entity|null)
+
+;
+
+: get-entity-item //(vector - entity|null)
+
+;
+
+: get-entity-player //(vector - entity|null)
+
+;
+
+: get-entity-living //(vector - entity|null)
+
+;
+
+
+// ================ Zone Distillation ================ \\
+
+
+: get-entities-animal //(vector number - [entity])
+
+;
+
+: get-entities-non-animal //(vector number - [entity])
+
+;
+
+: get-entities-monster //(vector number - [entity])
+
+;
+
+: get-entities-non-monster //(vector number - [entity])
+
+;
+
+: get-entities-item //(vector number - [entity])
+
+;
+
+: get-entities-non-item //(vector number - [entity])
+
+;
+
+: get-entities-player //(vector number - [entity])
+
+;
+
+: get-entities-non-player //(vector number - [entity])
+
+;
+
+: get-entities-living //(vector number - [entity])
+
+;
+
+: get-entities-non-living //(vector number - [entity])
+
+;
+
+: get-entities //(vector number - [entity])
+
+;
+
+
+// ================ List Manipulation ================ \\
+
+
+: read-list-item //(list number - any)
+
+;
+
+: list-slice //(list number number - list)
+
+;
+
+: list-push //(list any - list)
+
+;
+
+: list-pop //(list - list any)
+
+;
+
+: {} //( - list)
+
+;
+
+: list-wrap //(any - list)
+	
+;
+
+: list-length //(list - number)
+
+;
+
+: list-reverse //(list - list)
+
+;
+
+: list-indexof //(list any - number)
+
+;
+
+: list-remove-item //(list number - list)
+
+;
+
+: write-list-item //(list number any - list)
+
+;
+
+: list-wrap-many //(many number - list)
+
+;
+
+: list-unwrap //(list - many)
+
+;
+
+: list-push-left //(list any - list)
+
+;
+
+: list-pop-left //(list - list any)
+
+;
+
+
+// ================ Escaping Patterns ================ \\
+
 
 : push-iota //( - any)
 	.pattern west qqqaw //Consideration
@@ -118,7 +464,108 @@
 ;
 
 
-// === Common Words ===
+// ================ Reading and Writing ================ \\
+
+
+: read-offhand //( - any)
+
+;
+
+: write-offhand //( - any)
+
+;
+
+: read-entity //(entity - any)
+
+;
+
+: write-entity //(entity any - )
+
+;
+
+: ?read-offhand //( - bool)
+
+;
+
+: ?read-entity //(entity - bool)
+
+;
+
+: ?write-offhand //( - bool)
+
+;
+
+: ?write-entity //(entity - bool)
+
+;
+
+: write-ravenmind //(any - )
+
+;
+
+: read-ravenmind //( - any)
+
+;
+
+
+// ================ Advanced Mathematics ================ \\
+
+: sin //(number - number)
+
+;
+
+: cos //(number - number)
+
+;
+
+: tan //(number - number)
+
+;
+
+: asin //(number - number)
+
+;
+
+: acos //(number - number)
+
+;
+
+: atan //(number - number)
+
+;
+
+: atan2 //(number - number)
+
+;
+
+: logbase //(number number - number)
+
+;
+
+
+// ================ Meta-evaluation ================ \\
+
+
+: eval //(pattern|[pattern] - many)
+
+;
+
+: eval/cc //(pattern|[pattern] - many)
+
+;
+
+: map //([pattern] list - list)
+
+;
+
+: break //( - )
+
+;
+
+// ================ Spell Circle Patterns ================ \\
+// ================ Akashic Patterns ================ \\
+
+// ================ Common Words ================ \\
 
 : caster-raycast-block //( - vector)
 	get-caster entity-position
@@ -138,6 +585,6 @@
 	raycast-entity
 ;
 
-get-caster entity-lookvector vector-axis
+
 
 

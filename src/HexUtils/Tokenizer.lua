@@ -1,5 +1,5 @@
-local StringEnumerator = require("HexUtils/lib/StringEnumerator")
-local Queue = require("HexUtils/lib/Queue")
+local StringEnumerator = require("HexUtils/StringEnumerator")
+local Queue = require("HexUtils/Queue")
 
 local Tokenizer = {}
 
@@ -18,22 +18,18 @@ function Tokenizer:_moveNextNonWhitespace()
 	end
 end
 
-local _numstartchars = "0123456789-"
-
 function Tokenizer:_tkNext()
 	local enum = self._ctx.enum
 	self:_moveNextNonWhitespace()
 	if (enum:remaining() == 0) then return true, nil end
 	local schar = enum:peek()
 	local schar2 = enum:remaining() > 1 and enum:peek(2)
-	if (schar:find("[0123456789-]")) then -- Number
-		return self:_tkNum()
-	elseif (schar == "\"" or schar == "'") then -- String
+	if (schar == "\"" or schar == "'") then -- String
 		return self:_tkString()
 	elseif (schar2 == "//" or schar2 == "/*") then -- Comment
 		self:_tkComment()
 		return self:_tkNext()
-	else -- Word
+	else -- Anything else is either a number or a word
 		return self:_tkWord()
 	end
 end
@@ -65,7 +61,10 @@ function Tokenizer:_tkWord()
 	while (enum:remaining() > 0 and not enum:peek():find("%s")) do
 		table.insert(tbl, enum:next())
 	end
-	return true, table.concat(tbl)
+	local word = table.concat(tbl)
+	local num = tonumber(word)
+	if (num ~= nil) then return true, num end
+	return true, word
 end
 
 function Tokenizer:_tkString()
@@ -97,14 +96,14 @@ function Tokenizer:_tkString()
 	return true, table.concat(tbl)
 end
 
-function Tokenizer:_tkNum()
+--[[function Tokenizer:_tkNum()
 	local success, str = self:_tkWord()
 	if (not success) then return false, str end
 	if (str == nil) then return false, "EOF" end
 	local num = tonumber(str)
 	if (num == nil) then return false, ("Invalid number '"..str.."' ("..self._ctx.filePath..", line "..self._ctx.line..")") end
 	return true, num
-end
+end--]]
 
 function Tokenizer:findFile(name)
 	local files = {}

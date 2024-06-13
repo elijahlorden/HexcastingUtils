@@ -1,0 +1,16 @@
+{
+  {
+    angles = "qqqaw",
+    startDir = "WEST",
+  },
+  "a",
+  {
+    angles = "qqqaw",
+    startDir = "WEST",
+  },
+  "b",
+  {
+    angles = "waaw",
+    startDir = "NORTH_EAST",
+  },
+}
