@@ -1,0 +1,21 @@
+.include hex.xth
+
+// ================ Common Words ================ \\
+
+: caster-raycast-block //( - vector)
+	get-caster entity-position
+	get-caster entity-lookvector
+	raycast-block
+;
+
+: caster-raycast-block-face //( - vector)
+	get-caster entity-position
+	get-caster entity-lookvector
+	raycast-block-face
+;
+
+: caster-raycast-entity //( - vector)
+	get-caster entity-position
+	get-caster entity-lookvector
+	raycast-entity
+;

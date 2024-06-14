@@ -12,7 +12,7 @@ local patterns = {}
 
 if (iota.startDir and iota.angles) then
 	table.insert(patterns, ".pattern "..iota.startDir:lower().." "..iota.angles)
-else if (#iota > 0 and iota[0].startDir and iota[0].angles) then
+elseif (#iota > 0 and iota[1].startDir and iota[1].angles) then
 	for i=1,#iota do
 		local pattern = iota[i]
 		if (pattern.startDir and pattern.angles) then
@@ -26,7 +26,7 @@ end
 local handle = io.open(fileName, "w+")
 
 for i=1,#patterns do
-	handle:write(pattern.."\n")
+	handle:write(patterns[i].."\n")
 end
 
 handle:close()

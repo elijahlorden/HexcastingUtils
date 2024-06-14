@@ -1,0 +1,4 @@
+.include hex.xth
+.include common-words.xth
+
+get-caster entity-height \1.7 ?lt \{ \.str "Sneaking" reveal } \{ \.str "Not sneaking" reveal } ? eval

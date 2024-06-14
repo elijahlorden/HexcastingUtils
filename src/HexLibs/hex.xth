@@ -1,5 +1,3 @@
-
-
 // ================ Basic Patterns ================ \\
 
 
@@ -8,7 +6,7 @@
 ; 
 
 : entity-position //(entity - vector)
-	.pattern east aa //Compass' Purification 
+	.pattern east aa //Compass' Purification
 ;
 
 : entity-position-feet //(entity - vector)
@@ -224,87 +222,55 @@
 
 
 : any-to-bool //(any - bool)
-
+	.pattern north_east aw //Augur's Purification
 ;
 
 : bool-to-number //(bool - number)
-
+	.pattern north_east wqaqw //Length Purification
 ;
 
 : not //(bool - bool)
-
+	.pattern north_west dw //Negation Purification
 ;
 
 : or //(bool bool - bool)
-
+	.pattern south_east waw //Disjunction Distillation
 ;
 
 : and //(bool bool - bool)
-
+	.pattern north_east wdw //Conjunction Distillation
 ;
 
 : xor //(bool bool - bool)
-
+	.pattern north_west dwa //Exclusion Distillation
 ;
 
 : ? //(bool any(true) any(false) - any)
-
+	.pattern south_east awdd //Augur's Exaltation
 ;
 
 : ?eq //(any any - bool)
-
+	.pattern east ad //Equality Distillation
 ;
 
 : ?neq //(any any - bool)
-
+	.pattern east da //Inequality Distillation
 ;
 
 : ?gt //(number number - bool)
-
+	.pattern south_east e //Maximus Distillation
 ;
 
 : ?lt //(number number - bool)
-
+	.pattern south_west q //Minimus Distillation
 ;
 
 : ?geq //(number number - bool)
-
+	.pattern south_east ee //Maximus Distillation II
 ;
 
 : ?leq //(number number - bool)
-
-;
-
-
-// ================ Types (Hexal) ================ \\
-
-
-: hexal:get-iota-type //(any - iotatype)
-
-;
-
-: hexal:get-entity-type //(entity - entitytype)
-
-;
-
-: hexal:get-item-type //(itemtypable - itemtype)
-
-;
-
-: hexal:get-hand-type //( - itemtype)
-
-;
-
-: hexal:get-entity-of-type //(entitytype vector - entity|null)
-
-;
-
-: hexal:get-entities-of-type //(entitytype vector number - [entity])
-
-;
-
-: hexal:get-entities-not-of-type //(entitytype vector number - [entity])
-
+	.pattern south_west qq //Minimus Distillation II
 ;
 
 
@@ -451,7 +417,7 @@
 // ================ Escaping Patterns ================ \\
 
 
-: push-iota //( - any)
+: \ //( - any)
 	.pattern west qqqaw //Consideration
 ;
 
@@ -547,44 +513,20 @@
 
 
 : eval //(pattern|[pattern] - many)
-
+	.pattern south_east deaqq //Hermes' Gambit
 ;
 
 : eval/cc //(pattern|[pattern] - many)
-
+	.pattern north_west qwaqde //Iris' Gambit
 ;
 
 : map //([pattern] list - list)
-
+	.pattern north_east dadad //Thoth's Gambit
 ;
 
 : break //( - )
-
+	.pattern south_west aqdee //Charon's Gambit
 ;
 
 // ================ Spell Circle Patterns ================ \\
 // ================ Akashic Patterns ================ \\
-
-// ================ Common Words ================ \\
-
-: caster-raycast-block //( - vector)
-	get-caster entity-position
-	get-caster entity-lookvector
-	raycast-block
-;
-
-: caster-raycast-block-face //( - vector)
-	get-caster entity-position
-	get-caster entity-lookvector
-	raycast-block-face
-;
-
-: caster-raycast-entity //( - vector)
-	get-caster entity-position
-	get-caster entity-lookvector
-	raycast-entity
-;
-
-
-
-

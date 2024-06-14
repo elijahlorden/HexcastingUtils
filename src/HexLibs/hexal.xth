@@ -1,0 +1,30 @@
+// ================ Types (Hexal) ================ \\
+
+
+: hexal:get-iota-type //(any - iotatype)
+
+;
+
+: hexal:get-entity-type //(entity - entitytype)
+
+;
+
+: hexal:get-item-type //(itemtypable - itemtype)
+
+;
+
+: hexal:get-hand-type //( - itemtype)
+
+;
+
+: hexal:get-entity-of-type //(entitytype vector - entity|null)
+
+;
+
+: hexal:get-entities-of-type //(entitytype vector number - [entity])
+
+;
+
+: hexal:get-entities-not-of-type //(entitytype vector number - [entity])
+
+;

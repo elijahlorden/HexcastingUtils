@@ -156,13 +156,14 @@ Tokenizer.new = function(rootFile, rootDirs)
 	local t = setmetatable({
 		_rootFile = rootFile,
 		_files = includeFiles,
+		_includedFiles = {},
 		_ctx = nil,
 		_ctxStack = {},
 		_tokenQueue = Queue.new()
 	}, _meta)
 	
 	local rootFilePath, err = t:findFile(t._rootFile)
-	if (not rootFilePath) then error("Failed to find root file: "..err, 2) end
+	if (not rootFilePath) then error("Failed to find root file: "..err, 0) end
 	
 	table.insert(t._ctxStack, { enum =  StringEnumerator.new(t:_readFile(rootFilePath)), filePath = rootFilePath, line = 1 })
 	
@@ -189,13 +190,16 @@ function Tokenizer:_nextToken()
 					if (type(fToken) ~= "string") then return false, ".include expected filename ("..self._ctx.filePath..", line "..self._ctx.line..")" end
 					local filePath, err = self:findFile(fToken)
 					if (not filePath) then return false, "Failed to find file '"..fToken.."' ("..self._ctx.filePath..", line "..self._ctx.line..")" end
-					-- Sanity check to detect .include loops
-					for i=1,#self._ctxStack do
-						if (self._ctxStack[i].filePath == filePath) then return false, ".include dependency loop detected ("..self._ctx.filePath..", line "..self._ctx.line..")" end
+					if (not self._includedFiles[filePath]) then -- Ignore this file if it was already included
+						self._includedFiles[filePath] = true
+						-- Sanity check to detect .include loops
+						for i=1,#self._ctxStack do
+							if (self._ctxStack[i].filePath == filePath) then return false, ".include dependency loop detected ("..self._ctx.filePath..", line "..self._ctx.line..")" end
+						end
+						-- Create and push context for new file
+						table.insert(self._ctxStack, { enum =  StringEnumerator.new(self:_readFile(filePath)), filePath = filePath, line = 1 })
+						break
 					end
-					-- Create and push context for new file
-					table.insert(self._ctxStack, { enum =  StringEnumerator.new(self:_readFile(filePath)), filePath = filePath, line = 1 })
-					break
 				else
 					foundToken = { value = token, file = self._ctx.filePath, line = self._ctx.line }
 				end

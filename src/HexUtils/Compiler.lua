@@ -30,11 +30,19 @@ local function addIota(self, iota)
 	end
 end
 
+local function addIotas(self, tbl)
+	if (self._compilingList) then
+		for i=1,#tbl do table.insert(self._compilingList, tbl[i]) end
+	else
+		for i=1,#tbl do table.insert(self._emitList, tbl[i]) end
+	end
+end
+
 local function autoEscape(self)
-	if (self._autoEscapeWord) then
-		for i=1,#self._autoEscapeWord do
-			addIota(self, self._autoEscapeWord[i])
-		end
+	if (self._inlineEscape or self._autoEscape) then
+		local escapeWord = self._words["\\"]
+		if (not escapeWord) then error("Failed to escape iota, word '\\' is not defined", 0) end
+		addIotas(self, escapeWord)
 	end
 end
 
@@ -95,12 +103,12 @@ local directives = {
 	end,
 	
 	["escape-on"] = function(self, dirTkn) -- Enable auto-escaping literal iotas.  Requires the 'push-iota' word to be defined.
-		if (not self._words["push-iota"]) then tokenErr(".escape-on requires the word 'push-iota' to be defined", dirTkn) end
-		self._autoEscapeWord = self._words["push-iota"]
+		if (not self._words["\\"]) then tokenErr(".escape-on requires the word '\\' to be defined", dirTkn) end
+		self._autoEscape = true
 	end,
 	
 	["escape-off"] = function(self, dirTkn) -- Disable auto-escaping literal iotas
-		self._autoEscapeWord = nil
+		self._autoEscape = false
 	end,
 	
 	["param"] = function(self, dirTkn) -- Prompt the user to enter an iota (emit with $name) : .param name prompt
@@ -144,6 +152,16 @@ function Compiler:compile(targetFileName, targetDirectories)
 		if (err) then error(err, 2) end
 		if (nextToken == nil) then break end
 		
+		-- This should happen in the tokenizer, but it was easier to add here.
+		if (type(nextToken.value) == "string" and #nextToken.value > 1 and nextToken.value:sub(1,1) == "\\" and not nextToken.value:find("$\\[}:;]")) then -- Any words starting with \ should be escaped
+			nextToken.value = nextToken.value:sub(2)
+			local num = tonumber(nextToken.value)
+			if (num ~= nil) then nextToken.value = num end
+			self._inlineEscape = true
+		else
+			self._inlineEscape = false
+		end
+		
 		if (type(nextToken.value) == "number") then -- Number literal
 			autoEscape(self)
 			addIota(self, { iType = "number", value = nextToken.value })
@@ -160,12 +178,14 @@ function Compiler:compile(targetFileName, targetDirectories)
 				if (wordName:find("^[:;{}]$")) then tokenErr("Invalid word name '"..wordName.."'", tkn) end
 				self._wordDefName = wordName
 				self._compilingList = {}
+				self._nWords = self._nWords + 1
 			elseif (nextToken.value == ";") then -- End word definition
 				if ((not (self._compilingList and self._wordDefName)) or #self._listStack > 0) then tokenErr("Unexpected ';'", nextToken) end
 				self._words[self._wordDefName] = self._compilingList
 				self._wordDefName = nil
 				self._compilingList = nil
 			elseif (nextToken.value == "{") then -- Start list
+				autoEscape(self)
 				if (self._compilingList) then
 					table.insert(self._listStack, self._compilingList)
 					self._compilingList = {}
@@ -186,6 +206,7 @@ function Compiler:compile(targetFileName, targetDirectories)
 				local paramName = nextToken:sub(2)
 				local param = self._params[paramName]
 				if (param == nil) then tokenErr("Unknown parameter '"..paramName.."'", nextToken) end
+				autoEscape(self)
 				addIota(self, { iType = type(param) == "number" and "number" or "string", value = param, token = nextToken })
 			elseif (nextToken.value:sub(1, 1) == ".") then -- Run compiler directive
 				self:_runDirective(nextToken)
@@ -193,13 +214,21 @@ function Compiler:compile(targetFileName, targetDirectories)
 				local wordName = nextToken.value
 				local word = self._words[wordName]
 				if (not word) then tokenErr("Unknown word '"..wordName.."'", nextToken) end
-				if (self._compilingList) then
-					for i=1,#word do
-						table.insert(self._compilingList, textutils.unserialize(textutils.serialize(word[i]))) -- Lazy deep copy
-					end
+				if (self._inlineEscape) then -- inline-escaped words (ex. '\wordname') should emit consideration + the word as a list
+					local iota = { iType = "list", value = textutils.unserialize(textutils.serialize(word)), token = nextToken }
+					local escapeWord = self._words["\\"]
+					if (not escapeWord) then tokenErr("inline escape requires word '\\' to be defined", nextToken) end
+					addIotas(self, escapeWord)
+					addIota(self, iota)
 				else
-					for i=1,#word do
-						table.insert(self._emitList, textutils.unserialize(textutils.serialize(word[i])))
+					if (self._compilingList) then
+						for i=1,#word do
+							table.insert(self._compilingList, textutils.unserialize(textutils.serialize(word[i]))) -- Lazy deep copy
+						end
+					else
+						for i=1,#word do
+							table.insert(self._emitList, textutils.unserialize(textutils.serialize(word[i])))
+						end
 					end
 				end
 			end
@@ -207,6 +236,8 @@ function Compiler:compile(targetFileName, targetDirectories)
 			error("Invalid token type: "..type(nextToken.value))
 		end
 	end
+	
+	print("Compile done: "..tostring(self._nWords).." words, "..tostring(#self._emitList).." result iotas")
 end
 
 function Compiler:_runDirective(dirTkn)
@@ -276,7 +307,7 @@ end
 local _meta = { __index = Compiler }
 
 Compiler.new = function()
-	local c = setmetatable({ _emitList = {}, _words = {}, _params = {}, _tokenizer = nil, _compilingList = nil, _listStack = {}, _wordDefName = nil, _autoEscapeWord = nil }, _meta)
+	local c = setmetatable({ _emitList = {}, _words = {}, _nWords = 0, _params = {}, _tokenizer = nil, _compilingList = nil, _listStack = {}, _wordDefName = nil, _autoEscape = false }, _meta)
 	return c
 end
 
