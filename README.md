@@ -10,7 +10,9 @@ To use:
 --- HexForth (.xth) language syntax ---
 
 Emit a number iota.  Currently you can't emit number patterns, this may be added later.
-```1 //Emits the number 1```
+```
+1 //Emits the number 1
+```
 
 Emit a string iota:
 ```
@@ -19,13 +21,19 @@ Emit a string iota:
 ```
 
 Emit a pattern iota:
-```.pattern [direction] [angles] //Emits "Mind's Reflection"```
+```
+.pattern [direction] [angles] //Emits "Mind's Reflection"
+```
 
 Emit a vector iota:
-```.vector 1 2 3 //Emits the vector [1, 2, 3]``` 
+```
+.vector 1 2 3 //Emits the vector [1, 2, 3]
+``` 
 
 Emit a boolean iota:
-```.bool true //Emits true```
+```
+.bool true //Emits true
+```
 
 Define a word.  The first token after the colon sets the name of the word.  Nested words are not supported.
 ```
