@@ -1,0 +1,72 @@
+// ================ Basic Spells ================ \\
+
+
+: create-explosion //(vector number - )
+	.pattern east aawaawaa //Explosion
+;
+
+: create-fireball //(vector number - )
+	.pattern east ddwddwdd //Fireball
+;
+
+: apply-impulse //(entity vector - )
+	.pattern south_west awqqqwaqw //Impulse
+;
+
+: blink-forward //(entity number - )
+	.pattern south_west awqqqwaq //Blink
+;
+
+: play-note //(vector number number - )
+	.pattern west adaa //Make Note
+;
+
+
+// ================ Block Manipulation ================ \\
+
+
+: place-block //(vector - )
+
+;
+
+: break-block //(vector - )
+
+;
+
+: create-water //(vector - )
+
+;
+
+: destroy-liquid //(vector - )
+
+;
+
+: conjure-block //(vector - )
+
+;
+
+: conjure-light //(vector - )
+
+;
+
+: bonemeal-position //(vector - ) 
+
+;
+
+: edify-sapling //(vector - )
+
+;
+
+: ignite-block //(vector - )
+
+;
+
+: extinguish-area //(vector - )
+
+;
+
+// ================ Nadirs ================ \\
+// ================ Crafting Casting Items ================ \\
+// ================ Sentinels ================ \\
+// ================ Internalize Pigment ================ \\
+// ================ Flight ================ \\

@@ -1,3 +1,5 @@
+.include hex-spells.xth
+
 // ================ Basic Patterns ================ \\
 
 
@@ -64,7 +66,7 @@
 	.pattern north_east wqaqw //Length Purification
 ;
 
-: vector-length //(vector - number)
+: length //(vector - number)
 	.pattern north_east wqaqw //Length Purification
 ;
 
@@ -277,76 +279,76 @@
 // ================ Entity Purification ================ \\
 
 
-: get-entity //(vector - entity|null)
-
+: position-entity //(vector - entity|null)
+	.pattern south_east qqqqqdaqa //Entity Purification
 ;
 
-: get-entity-animal //(vector - entity|null)
-
+: position-animal //(vector - entity|null)
+	.pattern south_east qqqqqdaqaawa //Entity Purification Animal
 ;
 
-: get-entity-monster //(vector - entity|null)
-
+: position-monster //(vector - entity|null)
+	.pattern south_east qqqqqdaqaawq //Entity Purification Monster
 ;
 
-: get-entity-item //(vector - entity|null)
-
+: position-item //(vector - entity|null)
+	.pattern south_east qqqqqdaqaaww //Entity Purification Item
 ;
 
-: get-entity-player //(vector - entity|null)
-
+: position-player //(vector - entity|null)
+	.pattern south_east qqqqqdaqaawe //Entity Purification Player
 ;
 
-: get-entity-living //(vector - entity|null)
-
+: position-living //(vector - entity|null)
+	.pattern south_east qqqqqdaqaawd //Entity Purification Living
 ;
 
 
 // ================ Zone Distillation ================ \\
 
 
-: get-entities-animal //(vector number - [entity])
-
+: zone-animals //(vector number - [entity])
+	.pattern south_east qqqqqwdeddwa //Zone Distillation Animal
 ;
 
-: get-entities-non-animal //(vector number - [entity])
-
+: zone-non-animals //(vector number - [entity])
+	.pattern north_east eeeeewaqaawa //Zone Distillation Non-Animal
 ;
 
-: get-entities-monster //(vector number - [entity])
-
+: zone-monsters //(vector number - [entity])
+	.pattern south_east qqqqqwdeddwq //Zone Distillation Monster
 ;
 
-: get-entities-non-monster //(vector number - [entity])
-
+: zone-non-monsters //(vector number - [entity])
+	.pattern north_east eeeeewaqaawq //Zone Distillation Non-Monster
 ;
 
-: get-entities-item //(vector number - [entity])
-
+: zone-items //(vector number - [entity])
+	.pattern south_east qqqqqwdeddww //Zone Distillation Item
 ;
 
-: get-entities-non-item //(vector number - [entity])
-
+: zone-non-items //(vector number - [entity])
+	.pattern north_east eeeeewaqaaww //Zone Distillation Non-Item
 ;
 
-: get-entities-player //(vector number - [entity])
-
+: zone-players //(vector number - [entity])
+	.pattern south_east qqqqqwdeddwe //Zone Distillation Player
 ;
 
-: get-entities-non-player //(vector number - [entity])
-
+: zone-non-players //(vector number - [entity])
+	.pattern north_east eeeeewaqaawe //Zone Distillation Non-Player
 ;
 
-: get-entities-living //(vector number - [entity])
-
+: zone-living //(vector number - [entity])
+	.pattern south_east qqqqqwdeddwd //Zone Distillation Living
 ;
 
-: get-entities-non-living //(vector number - [entity])
-
+: zone-non-living //(vector number - [entity])
+	.pattern north_east eeeeewaqaawd //Zone Distillation Non-Living
 ;
 
-: get-entities //(vector number - [entity])
-
+: zone-entities //(vector number - [entity])
+	.pattern south_east qqqqqwded //Zone Distillation Any
 ;
 
 
@@ -354,63 +356,59 @@
 
 
 : read-list-item //(list number - any)
-
+	.pattern north_west deeed //Selection Distillation
 ;
 
 : list-slice //(list number number - list)
-
+	.pattern north_west qaeaqwded //Selection Exaltation
 ;
 
 : list-push //(list any - list)
-
+	.pattern south_west edqde //Integration Distillation
 ;
 
 : list-pop //(list - list any)
-
+	.pattern north_west qaeaq //Derivation Distillation
 ;
 
 : {} //( - list)
-
+	.pattern north_east qqaeaae //Vacant Reflection
 ;
 
 : list-wrap //(any - list)
-	
-;
-
-: list-length //(list - number)
-
+	.pattern east adeeed //Single's Purification
 ;
 
 : list-reverse //(list - list)
-
+	.pattern east qqqaede //Retrograde Purification
 ;
 
 : list-indexof //(list any - number)
-
+	.pattern east dedqde //Locator's Distillation
 ;
 
 : list-remove-item //(list number - list)
-
+	.pattern south_west edqdewaqa //Excisor's Distillation
 ;
 
 : write-list-item //(list number any - list)
-
+	.pattern north_west wqaeaqw //Surgeon's Exaltation
 ;
 
 : list-wrap-many //(many number - list)
-
+	.pattern south_west ewdqdwe //Flock's Gambit
 ;
 
 : list-unwrap //(list - many)
-
+	.pattern north_west qwaeawq //Flock's Disintegration
 ;
 
 : list-push-left //(list any - list)
-
+	.pattern south_east ddewedd //Speaker's Distillation
 ;
 
 : list-pop-left //(list - list any)
-
+	.pattern south_west aaqwqaa //Speaker's Decomposition
 ;
 
 
@@ -434,78 +432,78 @@
 
 
 : read-offhand //( - any)
-
+	.pattern east aqqqqq //Scribe's Reflection
 ;
 
 : write-offhand //( - any)
-
+	.pattern east deeeee //Scribe's Gambit
 ;
 
 : read-entity //(entity - any)
-
+	.pattern east wawqwqwqwqwqw //Chronicler's Purification
 ;
 
 : write-entity //(entity any - )
-
+	.pattern east wdwewewewewew //Chronicler's Gambit
 ;
 
 : ?read-offhand //( - bool)
-
+	.pattern east aqqqqqe //Auditor's Reflection
 ;
 
 : ?read-entity //(entity - bool)
-
+	.pattern east wawqwqwqwqwqwew //Auditor's Purification
 ;
 
 : ?write-offhand //( - bool)
-
+	.pattern east deeeeeq //Assessor's Reflection
 ;
 
 : ?write-entity //(entity - bool)
-
+	.pattern east wdwewewewewewqw //Assessor's Purification
 ;
 
 : write-ravenmind //(any - )
-
+	.pattern north_west eqqwawqaaw //Huginn's Gambit
 ;
 
 : read-ravenmind //( - any)
-
+	.pattern north_east qeewdweddw //Muninn's Reflection
 ;
 
 
 // ================ Advanced Mathematics ================ \\
 
 : sin //(number - number)
-
+	.pattern south_east qqqqqaa //Sine Purification
 ;
 
 : cos //(number - number)
-
+	.pattern south_east qqqqqad //Cosine Purification
 ;
 
 : tan //(number - number)
-
+	.pattern south_west wqqqqqadq //Tangent Purification
 ;
 
 : asin //(number - number)
-
+	.pattern south_east ddeeeee //Inverse Sine Purification
 ;
 
 : acos //(number - number)
-
+	.pattern north_east adeeeee //Inverse Cosine Purification
 ;
 
 : atan //(number - number)
-
+	.pattern north_east eadeeeeew //Inverse Tangent Purification
 ;
 
 : atan2 //(number - number)
-
+	.pattern west deadeeeeewd //Inverse Tangent Purification 2
 ;
 
 : logbase //(number number - number)
-
+	.pattern north_west eqaqe //Logarithmic Distillation
 ;
 
 
@@ -528,5 +526,34 @@
 	.pattern south_west aqdee //Charon's Gambit
 ;
 
+
 // ================ Spell Circle Patterns ================ \\
+
+
+: get-impetus-position //( - vector)
+	.pattern south_west eaqwqae //Waystone Reflection
+;
+
+: get-impetus-lookvector //( - vector)
+	.pattern south_west eaqwqaewede //Lodestone Reflection
+;
+
+: get-circle-lower-north-west //( - vector)
+	.pattern south_west eaqwqaewdd //Lesser Fold Reflection
+;
+
+: get-circle-upper-south-east-position //( - vector)
+	.pattern west aqwqawaaqa //Greater Fold Reflection
+;
+
+
 // ================ Akashic Patterns ================ \\
+
+
+: read-akashic-library //(vector pattern - any)
+	.pattern west qqqwqqqqqaq //Akasha's Distillation
+;
+
+: write-akashic-library //(vector pattern any - )
+	.pattern east eeeweeeeede //Akasha's Gambit
+;

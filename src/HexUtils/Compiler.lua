@@ -237,7 +237,7 @@ function Compiler:compile(targetFileName, targetDirectories)
 		end
 	end
 	
-	print("Compile done: "..tostring(self._nWords).." words, "..tostring(#self._emitList).." result iotas")
+	print("Compile done: "..tostring(self._nWords).." words")
 end
 
 function Compiler:_runDirective(dirTkn)
