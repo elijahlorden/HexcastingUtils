@@ -1,0 +1,7 @@
+.include hex.xth
+.include common-words.xth
+
+caster-raycast-entity
+\{ read-offhand eval }
+write-artifact
+

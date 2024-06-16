@@ -26,47 +26,126 @@
 
 
 : place-block //(vector - )
-
+	.pattern south_west eeeeede //Place Block
 ;
 
 : break-block //(vector - )
-
+	.pattern east qaqqqqq //Break Block
 ;
 
 : create-water //(vector - )
-
+	.pattern south_east aqawqadaq //Create Water
 ;
 
 : destroy-liquid //(vector - )
-
+	.pattern south_west dedwedade //Destroy Liquid
 ;
 
 : conjure-block //(vector - )
-
+	.pattern north_east qqa //Conjure Block
 ;
 
 : conjure-light //(vector - )
-
+	.pattern north_east qqd //Conjure Light
 ;
 
-: bonemeal-position //(vector - ) 
-
+: overgrow //(vector - ) 
+	.pattern north_east wqaqwawqaqw //Overgrow
 ;
 
-: edify-sapling //(vector - )
-
+: edify-sapling //(vector - ) //Edify Sapling
+	.pattern north_east wqaqwd
 ;
 
 : ignite-block //(vector - )
-
+	.pattern south_east aaqawawa //Ignite Block
 ;
 
 : extinguish-area //(vector - )
-
+	.pattern south_west ddedwdwd //Extinguish Area
 ;
 
+
 // ================ Nadirs ================ \\
+
+
+: apply-weakness //(entity number number - )
+	.pattern north_west qqqqqaqwawaw //White Sun's Nadir
+;
+
+: apply-levitation //(entity number - )
+	.pattern west qqqqqawwawawd //Blue Sun's Nadir
+;
+
+: apply-withering //(entity number number - )
+	.pattern south_west qqqqqaewawawe //Black Sun's Nadir
+;
+
+: apply-poison //(entity number number - )
+	.pattern south_east qqqqqadwawaww //Red Sun's Nadir
+;
+
+: apply-slowness //(entity number number - )
+	.pattern south_east qqqqqadwawaw //Green Sun's Nadir
+;
+
+
 // ================ Crafting Casting Items ================ \\
+
+
+: write-cypher //(entity [pattern] - )
+	.pattern east waqqqqq //Craft Cypher
+;
+
+: write-trinket //(entity [pattern] - )
+	.pattern east wwaqqqqqeaqeaeqqqeaeq //Craft Trinket
+;
+
+: write-artifact //(entity [pattern] - )
+	.pattern east wwaqqqqqeawqwqwqwqwqwwqqeadaeqqeqqeadaeqq //Craft Artifact
+;
+
+: recharge-offhand //(entity - )
+	.pattern north_west qqqqqwaeaeaeaeaea //Recharge Item
+;
+
+: erase-offhand //( - )
+	.pattern east qdqawwaww //Erase Item
+;
+
+
 // ================ Sentinels ================ \\
+
+
+: summon-sentinel //(vector - )
+	.pattern east waeawae //Summon Sentinel
+;
+
+: banish-sentinel //( - )
+	.pattern north_east qdwdqdw //Banish Sentinel
+;
+
+: locate-sentinel //( - vector)
+	.pattern east waeawaede //Locate Sentinel
+;
+
+: sentinel-direction //(vector - vector)
+	.pattern east waeawaedwa //Wayfind Sentinel
+;
+
+
 // ================ Internalize Pigment ================ \\
+
+: internalize-pigment //( - )
+	.pattern east awddwqawqwawq //Internalize Pigment
+;
+
 // ================ Flight ================ \\
+
+: flight-anchored //(entity number - )
+	.pattern south_west awawaawq //Anchorite's Flight
+;
+
+: flight-timed //(entity number - )
+	.pattern north_east dwdwdewq //Wayfarer's Flight
+;

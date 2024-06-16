@@ -1,0 +1,82 @@
+.include-tbl great-spells.tbl
+
+// ================ Base-mod Great Spells ================ \\
+
+: create-lava //(vector - )
+	.great-spell "Create Lava"
+;
+
+: summon-lightning //(vector - )
+	.great-spell "Summon Lightning"
+;
+
+: summon-rain //( - )
+	.great-spell "Summon Rain"
+;
+
+: dispel-rain //( - )
+	.great-spell "Dispel Rain"
+;
+
+: altiora //( - )
+	.great-spell "Altiora"
+;
+
+: summon-greater-sentinel //(vector - )
+	.great-spell "Summon Greater Sentinel"
+;
+
+: craft-phial //(entity - )
+	.great-spell "Craft Phial"
+;
+
+: flay-mind //(entity vector - )
+	.great-spell "Flay Mind"
+;
+
+// ================ Zeniths ================ \\
+
+
+: greater-teleport //(entity - vector)
+	.great-spell "Greater Teleport"
+;
+
+: apply-regeneration //(entity number number - )
+	.great-spell "White Sun's Zenith"
+;
+
+: apply-night-vision //(entity number - )
+	.great-spell "Blue Sun's Zenith"
+;
+
+: apply-absorption //(entity number number - )
+	.great-spell "Black Sun's Zenith"
+;
+
+: apply-haste //(entity number number - )
+	.great-spell "Red Sun's Zenith"
+;
+
+: apply-strength //(entity number number - )
+	.great-spell "Green Sun's Zenith"
+;
+
+
+// ================ Hexal Great Spells ================ \\
+
+: hexal:accelerate-tick //(vector - )
+	.great-spell "Hexal:Accelerate"
+;
+
+: hexal:consume-wisp //(entity - )
+	.great-spell "Hexal:Consume Wisp"
+;
+
+: hexal:bind-wisp //(entity - )
+	.great-spell "Hexal:Bind Wisp"
+;
+
+: hexal:create-gate //(null | vector | vector, entity - gate)
+	.great-spell "Hexal:Gate's Reflection"
+;
+

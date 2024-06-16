@@ -1,0 +1,19 @@
+.include hex.xth
+//.include common-words.xth
+//.include great-spells.xth
+//.include hexal.xth
+
+.global test 
+.global test2
+
+.init-globals
+
+\.str test g!test
+\.str test2 g!test2
+
+g@test reveal drop
+g@test2 reveal drop
+
+
+
+

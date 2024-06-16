@@ -1,0 +1,30 @@
+local tblFile = "/HexLibs/great-spells.tbl"
+
+local port = peripheral.find("focal_port")
+if (not port) then error("Failed to find focal port", 0) end
+if (not port.hasFocus()) then error("Focal port is empty", 0) end
+
+local iota = port.readIota()
+if (type(iota) ~= "table" or not iota.startDir or not iota.angles) then error("Iota stored in focus is not a pattern", 0) end
+
+local handle = io.open(tblFile, "r")
+local tblStr = handle and handle:read("a") or ""
+if (handle) then handle:close() end
+
+local tbl = textutils.unserialize(tblStr) or {}
+
+term.write("Great Spell Name: ")
+local spellName = io.read()
+local overwriteIdx = nil
+for i,p in pairs(tbl) do if (tbl[i].type == "greatSpell" and tbl[i].name == spellName) then overwriteIdx = i; print("Overwriting existing entry") end end
+
+if (overwriteIdx ~= nil) then
+	tbl[overwriteIdx] = { type = "greatSpell", name = spellName, startDir = iota.startDir:lower(), angles = iota.angles }
+else
+	table.insert(tbl, { type = "greatSpell", name = spellName, startDir = iota.startDir:lower(), angles = iota.angles })
+end
+
+handle = io.open(tblFile, "w+")
+handle:write(textutils.serialize(tbl))
+handle:close()
+print("Updated "..tblFile)

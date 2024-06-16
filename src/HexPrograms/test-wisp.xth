@@ -1,0 +1,41 @@
+.include hex.xth
+.include common-words.xth
+.include hexal.xth
+
+//Wisp pattern list
+\{
+	dup //Duplicate wisp ref
+	entity-position
+	dup
+	//Create random unit vector
+	random \0.5 sub \2 mul
+	random \0.5 sub \2 mul
+	random \0.5 sub \2 mul
+	vector-wrap
+	
+	//Check if wisp will hit a block
+	dup over swap
+	raycast-block
+	dup
+	any-to-bool
+	\{ //Wisp will hit a block
+		
+	}
+	\{ //Wisp will not hit a block
+		drop
+	}
+	? eval
+	
+	//Nav to position + random vector
+	add
+	hexal:set-wisp-target
+	hexal:wisp-wander
+}
+//Wisp spawn location
+caster-raycast-block
+caster-raycast-block-face \2 mul
+add
+//Wisp starting media
+\30
+
+hexal:create-cyclic-wisp

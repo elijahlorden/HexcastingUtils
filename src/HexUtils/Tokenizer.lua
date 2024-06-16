@@ -119,6 +119,14 @@ function Tokenizer:findFile(name)
 	else return nil end
 end
 
+function Tokenizer:isPathIncluded(path)
+	return self._includedFiles[path]
+end
+
+function Tokenizer:markPathIncluded(path)
+	self._includedFiles[path] = true
+end
+
 local _meta = { __index = Tokenizer }
 
 Tokenizer.new = function(rootFile, rootDirs)

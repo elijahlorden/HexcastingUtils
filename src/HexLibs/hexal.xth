@@ -1,30 +1,193 @@
-// ================ Types (Hexal) ================ \\
+// ================ Fabric-Only Hexal Spells ================ \\
 
 
-: hexal:get-iota-type //(any - iotatype)
-
+: hexal:phase-block //(vector number - )
+	.pattern west daqqqa //Phase Block
 ;
 
-: hexal:get-entity-type //(entity - entitytype)
 
+// ================ Hexal Basic Patterns ================ \\
+
+
+: hexal:get-world-time //( - number)
+	.pattern north_west ddwaa //Timekeeper's Reflection
 ;
 
-: hexal:get-item-type //(itemtypable - itemtype)
-
+: hexal:get-meta-budget //( - number)
+	.pattern south_east qqaed //Thanatos' Reflection
 ;
 
-: hexal:get-hand-type //( - itemtype)
+: hexal:entity-breath //(entity - number)
+	.pattern north_west aqawdwaqawd //Diver's Purification
+;
 
+: hexal:entity-health //(entity - number)
+	.pattern north_west aqwawqa //Nurse's Purification
+;
+
+: hexal:entity-armor //(entity - number)
+	.pattern north_west wqqqqw //Squire's Purification
+;
+
+: hexal:entity-toughness //(entity - number)
+	.pattern east aeqqqqea //Boxer's Purification
+;
+
+: hexal:get-light-level //(vector - number)
+	.pattern north_east qedqde //Lamplighter's Purification
+;
+
+
+// ================ Types ================ \\
+
+
+: hexal:iota-type //(any - iotatype)
+	.pattern south_west awd
+;
+
+: hexal:entity-type //(entity - entitytype)
+	.pattern south_west qawde
+;
+
+: hexal:item-type //(itemtypable - itemtype)
+	.pattern east qaqqaea
+;
+
+: hexal:offhand-type //( - itemtype)
+	.pattern south_west edeedqd
 ;
 
 : hexal:get-entity-of-type //(entitytype vector - entity|null)
-
+	.pattern north_east dadqqqqqdad
 ;
 
-: hexal:get-entities-of-type //(entitytype vector number - [entity])
-
+: hexal:zone-type //(entitytype vector number - [entity])
+	.pattern south_east waweeeeewaw
 ;
 
-: hexal:get-entities-not-of-type //(entitytype vector number - [entity])
-
+: hexal:zone-not-type //(entitytype vector number - [entity])
+	.pattern north_east wdwqqqqqwdw
 ;
+
+
+// ================ Hexal Spells ================ \\
+
+
+: hexal:smelt //(vector|entity|mote - )
+	.pattern east wqqqwqqadad //Smelt
+;
+
+: hexal:freeze-block //(vector - )
+	.pattern west weeeweedada //Freeze
+;
+
+: hexal:falling-block //(vector - )
+	.pattern east wqwawqwqwqwqwqw //Falling Block
+;
+
+: hexal:place-block //(itemtype|mote vec - )
+	.pattern west eeeeedeeeee //Place Block 2
+;
+
+: hexal:create-particls //(vector|[vector] - )
+	.pattern north_east eqqqqa //Particles
+;
+
+
+// ================ Wisps ================ \\
+
+
+: hexal:create-projectile-wisp //([pattern] vector vector number - )
+	.pattern north_west aqaeqeeeee
+;
+
+: hexal:create-cyclic-wisp //([pattern] vector number - )
+	.pattern north_west aqaweewaqawee
+;
+
+: hexal:get-wisp //( - wisp)
+	.pattern north_east dedwqqwdedwqqaw
+;
+
+: hexal:get-wisp-media //( - number)
+	.pattern north_west aqaweewaqaweedw
+;
+
+: hexal:get-wisp-pattern //(entity - [pattern])
+	.pattern south_east aweewaqaweewaawww
+;
+
+: hexal:?entity-owns-wisp //(wisp entity - boolean)
+	.pattern south_west dwqqwdedwqqwddwww
+;
+
+: hexal:set-wisp-target //(vector - )
+	.pattern west awqwawqaw
+;
+
+: hexal:get-wisp-target //( - vector)
+	.pattern east ewdwewdew
+;
+
+: hexal:set-wisp-speed //(number - )
+	.pattern west aeawqqqae
+;
+
+: hexal:get-wisp-speed //( - number)
+	.pattern east eeewdqdee
+;
+
+: hexal:enable-transfer //(number - )
+	.pattern north_west qqqqqewwqeeeee
+;
+
+: hexal:disable-transfer //(number - )
+	.pattern north_west qqqqqeqdeddweqqqqq
+;
+
+: hexal:enable-transfer-other //(wisp number - )
+	.pattern south_west eeeeeqwweqqqqq
+;
+
+: hexal:disable-transfer-other //(wisp number - )
+	.pattern south_west eeeeeqeaqaawqeeeee
+;
+
+: hexal:position-wisp //(vector - wisp|null)
+	.pattern south_east qqwdedwqqdaqaaww
+;
+
+: hexal:zone-wisp //(vector number - [wisp])
+	.pattern south_east qqwdedwqqwdeddww
+;
+
+: hexal:zone-non-wisp //(vector number - [entity])
+	.pattern north_east eewaqaweewaqaaww
+;
+
+: hexal:wisp-delay //(number - )
+	.pattern north_west aqawded
+;
+
+: hexal:wisp-listen //( - )
+	.pattern east aqqqqqwdeddw
+;
+
+: hexal:wisp-wander //( - )
+	.pattern east eqwawqwaqww
+;
+
+
+// ================ Links ================ \\
+
+
+
+
+
+
+
+
+
+
+// ================ Motes ================ \\
+// ================ Gates ================ \\

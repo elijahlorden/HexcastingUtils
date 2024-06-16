@@ -1,0 +1,15 @@
+.include hex.xth
+.include common-words.xth
+
+caster-raycast-entity
+\{
+	?caster-sneaking
+	\{
+		caster-raycast-block write-offhand
+	}
+	\{
+		caster-raycast-block read-offhand sub reveal write-offhand
+	}
+	? eval
+}
+write-artifact

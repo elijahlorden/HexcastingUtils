@@ -1,0 +1,15 @@
+.include hex.xth
+.include common-words.xth
+
+caster-raycast-entity
+\{
+	?caster-sneaking
+	\{
+		get-caster \1 apply-levitation
+	}
+	\{
+		get-caster dup entity-lookvector \4 mul apply-impulse
+	}
+	? eval
+}
+write-artifact

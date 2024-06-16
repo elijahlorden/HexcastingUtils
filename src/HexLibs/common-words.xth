@@ -19,3 +19,7 @@
 	get-caster entity-lookvector
 	raycast-entity
 ;
+
+: ?caster-sneaking //( - bool)
+	get-caster entity-height \1.7 ?lt
+;
