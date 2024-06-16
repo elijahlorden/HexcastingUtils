@@ -11,8 +11,8 @@
 \.str test g!test
 \.str test2 g!test2
 
-g@test reveal drop
-g@test2 reveal drop
+g@test reveal
+g@test2 reveal
 
 
 

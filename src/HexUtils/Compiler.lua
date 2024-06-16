@@ -70,10 +70,10 @@ local function addIotas(self, tbl)
 	end
 end
 
-local function autoEscape(self)
+local function autoEscape(self, token)
 	if (self._inlineEscape or self._autoEscape) then
 		local escapeWord = self._words["\\"]
-		if (not escapeWord) then error("Failed to escape iota, word '\\' is not defined", 0) end
+		if (not escapeWord) then if(token) then tokenErr("Failed to escape iota, word '\\' is not defined", token) else error("Failed to escape iota, word '\\' is not defined", 0) end end
 		addIotas(self, escapeWord)
 	end
 end
@@ -100,7 +100,7 @@ local directives = {
 		local angles = getDirArg(self, 2, "string", dirTkn).value:lower()
 		if (not directions[direction]) then tokenErr("Invalid start direction '"..direction.."'", dirTkn) end
 		if (angles:find("[^qaweds]")) then tokenErr("Invalid pattern angles", dirTkn) end
-		autoEscape(self)
+		autoEscape(self, dirTkn)
 		addIota(self, { iType = "pattern", startDir = direction, angles = angles, token = dirTkn })
 	end,
 	
@@ -133,7 +133,7 @@ local directives = {
 	
 	["great-spell"] = function(self, dirTkn) -- .great-spell name
 		local spellNameTkn = getDirArg(self, 1, "string", dirTkn)
-		autoEscape(self)
+		autoEscape(self, dirTkn)
 		addIota(self, { iType = "greatSpell", value = spellNameTkn.value }) -- These are checked during emit
 	end,
 	
@@ -141,7 +141,7 @@ local directives = {
 		local tkn, err = self._tokenizer:next()
 		if (err) then error(err, 0) end
 		if (not tkn) then tokenErr(".str expected string or number, got nil", dirTkn) end
-		autoEscape(self)
+		autoEscape(self, dirTkn)
 		addIota(self, { iType = "string", value = tostring(tkn.value), token = dirTkn })
 	end,
 	
@@ -155,7 +155,7 @@ local directives = {
 			if (type(n) ~= "number") then tokenErr(".vector expected number, got "..type(n), tkn) end
 			vec[i] = n
 		end
-		autoEscape(self)
+		autoEscape(self, dirTkn)
 		addIota(self, { iType = "vector", value = vec, token = dirTkn })
 	end,
 	
@@ -167,25 +167,25 @@ local directives = {
 		if (type(str) ~= "string") then tokenErr(".bool expected string, got "..type(str), tkn) end
 		str = str:lower()
 		if (str ~= "true" and str ~= "false") then tokenErr("'"..str.."' is not a valid boolean", tkn) end
-		autoEscape(self)
+		autoEscape(self, dirTkn)
 		addIota(self, { iType = "bool", value = (str == "true"), token = dirTkn })
 	end,
 	
 	["hexal-iotatype"] = function(self, dirTkn) -- .hexal-iotatype [name]
 		local name = getDirArg(self, 1, "string", dirTkn)
-		autoEscape(self)
+		autoEscape(self, dirTkn)
 		addIota(self, { iType = "hexal:iotatype", value = name.value, token = dirTkn })
 	end,
 	
 	["hexal-entitytype"] = function(self, dirTkn) -- .hexal-entitytype [name]
 		local name = getDirArg(self, 1, "string", dirTkn)
-		autoEscape(self)
+		autoEscape(self, dirTkn)
 		addIota(self, { iType = "hexal:entitytype", value = name.value, token = dirTkn })
 	end,
 	
 	["hexal-itemtype"] = function(self, dirTkn) -- .hexal-itemtype [name]
 		local name = getDirArg(self, 1, "string", dirTkn)
-		autoEscape(self)
+		autoEscape(self, dirTkn)
 		addIota(self, { iType = "hexal:itemtype", value = name.value, token = dirTkn })
 	end,
 	
@@ -303,15 +303,13 @@ function Compiler:compile(targetFileName, targetDirectories)
 				table.insert(patterns, getPredefinedIntPattern(gIdx, nextToken)) -- [index of global]
 				for i=1,#wReadList do table.insert(patterns, wReadList[i]) end -- read-list-item
 			else -- Write (read-ravenmind [index of global] \3 stack-permute write-list-item write-ravenmind)
-				local wStackPermute = getWord(self, "stack-permute", nextToken)
+				local wRot = getWord(self, "rot", nextToken)
 				local wWriteList = getWord(self, "write-list-item", nextToken)
 				local wWriteRavenmind = getWord(self, "write-ravenmind", nextToken)
 				
-				
 				for i=1,#wReadRavenmind do table.insert(patterns, wReadRavenmind[i]) end -- read-ravenmind
 				table.insert(patterns, getPredefinedIntPattern(gIdx, nextToken)) -- [index of global]
-				table.insert(patterns, getPredefinedIntPattern(3, nextToken)) -- \3
-				for i=1,#wStackPermute do table.insert(patterns, wStackPermute[i]) end -- stack-permute
+				for i=1,#wRot do table.insert(patterns, wRot[i]) end -- stack-permute
 				for i=1,#wWriteList do table.insert(patterns, wWriteList[i]) end -- write-list-item
 				for i=1,#wWriteRavenmind do table.insert(patterns, wWriteRavenmind[i]) end -- write-ravenmind
 			end
@@ -322,12 +320,8 @@ function Compiler:compile(targetFileName, targetDirectories)
 			else
 				addIotas(self, patterns)
 			end
-			goto compile_continue
-		end
-		
-		
-		if (type(nextToken.value) == "number") then -- Number literal
-			autoEscape(self)
+		elseif (type(nextToken.value) == "number") then -- Number literal
+			autoEscape(self, nextToken)
 			addIota(self, { iType = "number", value = nextToken.value })
 		elseif (type(nextToken.value) == "string") then
 			if (nextToken.value == ":") then -- Start word definition
@@ -349,7 +343,7 @@ function Compiler:compile(targetFileName, targetDirectories)
 				self._wordDefName = nil
 				self._compilingList = nil
 			elseif (nextToken.value == "{") then -- Start list
-				autoEscape(self)
+				autoEscape(self, nextToken)
 				if (self._compilingList) then
 					table.insert(self._listStack, self._compilingList)
 					self._compilingList = {}
@@ -370,7 +364,7 @@ function Compiler:compile(targetFileName, targetDirectories)
 				local paramName = nextToken:sub(2)
 				local param = self._params[paramName]
 				if (param == nil) then tokenErr("Unknown parameter '"..paramName.."'", nextToken) end
-				autoEscape(self)
+				autoEscape(self, nextToken)
 				addIota(self, { iType = type(param) == "number" and "number" or "string", value = param, token = nextToken })
 			elseif (nextToken.value:sub(1, 1) == ".") then -- Run compiler directive
 				self:_runDirective(nextToken)
@@ -399,7 +393,6 @@ function Compiler:compile(targetFileName, targetDirectories)
 		else
 			error("Invalid token type: "..type(nextToken.value))
 		end
-		::compile_continue::
 	end
 	
 	print("Compile done: "..tostring(self._nWords).." words")

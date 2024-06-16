@@ -2,16 +2,35 @@
 .include common-words.xth
 .include hexal.xth
 
+.global wisp-pos
+.global dir
+
 //Wisp pattern list
 \{
-	dup //Duplicate wisp ref
-	entity-position
-	dup
+	//Init ravenmind if this is the first cast
+	get-stack-size \0 ?gt
+	\{ drop .init-globals }
+	\ {}
+	? eval
+	
 	//Create random unit vector
 	random \0.5 sub \2 mul
 	random \0.5 sub \2 mul
 	random \0.5 sub \2 mul
 	vector-wrap
+	g!dir
+	
+	//Check if wisp will hit a block
+	get-wisp
+	g@dir
+	2dup
+	
+	
+	
+	dup //Duplicate wisp ref
+	entity-position
+	dup
+
 	
 	//Check if wisp will hit a block
 	dup over swap

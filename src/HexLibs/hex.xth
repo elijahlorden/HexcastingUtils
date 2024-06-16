@@ -1,5 +1,21 @@
 .include hex-spells.xth
 
+// ================ Escaping Patterns ================ \\
+
+
+: \ //( - any)
+	.pattern west qqqaw //Consideration
+;
+
+: ( //( - )
+	.pattern west qqq //Introspection
+;
+
+: ) //( - list)
+	.pattern east eee //Retrospection
+;
+
+
 // ================ Basic Patterns ================ \\
 
 
@@ -409,22 +425,6 @@
 
 : list-pop-left //(list - list any)
 	.pattern south_west aaqwqaa //Speaker's Decomposition
-;
-
-
-// ================ Escaping Patterns ================ \\
-
-
-: \ //( - any)
-	.pattern west qqqaw //Consideration
-;
-
-: ( //( - )
-	.pattern west qqq //Introspection
-;
-
-: ) //( - list)
-	.pattern east eee //Retrospection
 ;
 
 
