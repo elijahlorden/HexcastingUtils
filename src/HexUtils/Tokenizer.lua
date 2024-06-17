@@ -63,7 +63,7 @@ function Tokenizer:_tkWord()
 	end
 	local word = table.concat(tbl)
 	local num = tonumber(word)
-	if (num ~= nil) then return true, num end
+	if (num ~= nil and word:sub(1,1) ~= '.') then return true, num end
 	return true, word
 end
 

@@ -1,0 +1,25 @@
+.include hex.xth
+.include hexal.xth
+.include common-words.xth
+
+//Wisp pattern list
+\{
+	hexal:receive-count .0 ?gt
+	\{
+		hexal:receive-iota
+		eval
+	}
+	{}
+	? eval
+	hexal:wisp-listen
+}
+
+//Wisp spawn location
+caster-raycast-block
+caster-raycast-block-face .2 mul
+add
+
+//Wisp starting media
+.200
+
+hexal:create-cyclic-wisp

@@ -1,0 +1,54 @@
+.include hex.xth
+.include common-words.xth
+.include hexal.xth
+
+.global dir
+
+//Wisp pattern list
+\{
+	.init-globals
+	
+	//Create random unit vector
+	create-random-unit-vector
+	g!dir
+	
+	//Check if wisp will hit a block
+	hexal:get-wisp
+	entity-position
+	g@dir
+	2dup //stack is (pos lookvector pos lookvector)
+	
+	raycast-block-face
+	rrot
+	raycast-block //stack is (block-face block-pos)
+	
+	dup
+	any-to-bool
+	\{ //Wisp will hit a block
+		add //Wisp should go to face of hit block
+	}
+	\{ //Wisp will not hit a block
+		drop drop
+		//Wisp should move 8 blocks in that direction
+		g@dir .8 mul
+		hexal:get-wisp entity-position
+		add
+	}
+	? eval
+	
+	//Stack should be (nav-pos)
+	reveal
+	hexal:set-wisp-target
+	hexal:wisp-wander
+
+}
+
+//Wisp spawn location
+caster-raycast-block
+caster-raycast-block-face .2 mul
+add
+
+//Wisp starting media
+.30
+
+hexal:create-cyclic-wisp

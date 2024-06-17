@@ -23,3 +23,10 @@
 : ?caster-sneaking //( - bool)
 	get-caster entity-height \1.7 ?lt
 ;
+
+: create-random-unit-vector
+	random .pattern north_west aqaawd sub .2 mul
+	random .pattern north_west aqaawd sub .2 mul
+	random .pattern north_west aqaawd sub .2 mul
+	vector-wrap
+;

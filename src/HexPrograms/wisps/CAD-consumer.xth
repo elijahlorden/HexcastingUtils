@@ -1,0 +1,34 @@
+.include hex.xth
+.include hexal.xth
+.include common-words.xth
+.include great-spells.xth
+
+//Wisp pattern list
+\{
+	\{ dup hexal:get-wisp ?eq \drop \hexal:consume-wisp ? eval }
+	hexal:get-wisp
+	entity-position
+	.5
+	hexal:zone-wisp
+	map drop
+	
+	hexal:receive-count .0 ?gt
+	\{
+		hexal:receive-iota
+		eval
+	}
+	\{
+		.20 hexal:wisp-delay
+	}
+	? eval
+}
+
+//Wisp spawn location
+caster-raycast-block
+caster-raycast-block-face .2 mul
+add
+
+//Wisp starting media
+.200
+
+hexal:create-cyclic-wisp

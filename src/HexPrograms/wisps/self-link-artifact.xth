@@ -1,0 +1,29 @@
+.include hex.xth
+.include hexal.xth
+.include common-words.xth
+
+: raycast-linkable
+	caster-raycast-entity
+	dup any-to-bool
+	{} //Entity found, do nothing
+	\{ //Entity not found, try block raycast
+		drop
+		caster-raycast-block
+	}
+	? eval
+;
+
+caster-raycast-entity
+\{
+	raycast-linkable
+	?caster-sneaking
+	\{
+		hexal:get-linkable-link
+		hexal:unlink
+	}
+	\{
+		hexal:link
+	}
+	? eval
+}
+write-artifact

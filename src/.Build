@@ -1,17 +1,20 @@
 local target, emitMode, emitTargetFile = ...
 
 if (not target) then error("Provide a target file name", 0) end
-if (not emitMode) then emitMode = "DuckyFocalPort" end
+if (not emitMode) then emitMode = "port" end
+emitMode = emitMode:lower()
 
 local Compiler = require("HexUtils/Compiler")
 
 local compiler = Compiler.new()
 compiler:compile(target, { "/HexLibs", "/HexPrograms" })
 
-if (emitMode == "DuckyFocalPort") then
+if (emitMode == "port") then
 	compiler:emit(Compiler.EmitMode.DuckyFocalPort, peripheral.find("focal_port"))
-elseif (emitMode == "DuckyDumpToFile") then
+elseif (emitMode == "file") then
 	compiler:emit(Compiler.EmitMode.DuckyDumpToFile, emitTargetFile)
+elseif (emitMode == "link") then
+	compiler:emit(Compiler.EmitMode.DuckyLink, peripheral.find("focal_link"))
 else
 	error("Unknown emit mode", 0)
 end

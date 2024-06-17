@@ -181,12 +181,57 @@
 // ================ Links ================ \\
 
 
+: hexal:link //(linkable - )
+	.pattern east eaqaaeqqqqqaweaqaaw //Link
+;
 
+: hexal:link-others //(linkable linkable - )
+	.pattern east eqqqqqawqeeeeedww //Link Others
+;
 
+: hexal:unlink //(number - )
+	.pattern west qdeddqeeeeedwqdeddw //Unlink
+;
 
+: hexal:unlink-others //(linkable linkable - )
+	.pattern west qeeeeedweqqqqqaww //Unlink Others
+;
 
+: hexal:get-link-linkable //(number - linkable)
+	.pattern east eqqqqqaww //Phonebook Purification
+;
 
+: hexal:get-linkable-link //(linkable - number)
+	.pattern south_west aeqqqqqawwd //Recognition Purification
+;
 
+: hexal:get-link-count //( - number)
+	.pattern west qeeeeedww //Popularity Reflection
+;
+
+: hexal:send-iota //(number any - )
+	.pattern north_west qqqqqwdeddw //Send Iota
+;
+
+: hexal:receive-iota //( - any)
+	.pattern north_east weeeeew //Recitation Reflection
+;
+
+: hexal:receive-count //( - number)
+	.pattern south_east aweeeeewaa //Postmaster's Reflection
+;
+
+: hexal:receive-clear //( - )
+	.pattern south_east aweeeeewa //Unclogging Gambit
+;
+
+: hexal:open-transmit //(number - )
+
+;
+
+: hexal:close-transmit //( - )
+
+;
 
 
 // ================ Motes ================ \\

@@ -1,19 +1,11 @@
 .include hex.xth
-//.include common-words.xth
-//.include great-spells.xth
-//.include hexal.xth
+.include common-words.xth
+.include great-spells.xth
+.include hexal.xth
 
-.global test 
-.global test2
+//read-offhand reveal drop
 
-.init-globals
-
-\.str test g!test
-\.str test2 g!test2
-
-g@test reveal
-g@test2 reveal
-
-
-
-
+caster-raycast-block
+caster-raycast-block-face
+add
+place-block

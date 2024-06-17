@@ -15,7 +15,9 @@ Compiler.EmitMode = {
 	DumpToFile = 1, -- Serialize output iotas and write to file
 	DuckyDumpToFile = 2, -- Convert output iotas to Ducky's Peripherals format and write to file
 	DuckyFocalPort = 3, -- Write output iotas to a Ducky's Peripherals focal port as a list
-	DuckyFocalPortSingle = 4 -- Write first output iota to a Ducky's Peripherals focal port
+	DuckyFocalPortSingle = 4, -- Write first output iota to a Ducky's Peripherals focal port
+	DuckyLink = 5, -- Send the output iotas as a list over an attached focal link
+	DuckyLinkCircleBuilder = 6 -- Used in conjunction with the circle builder artifact
 }
 
 local numberDirectionMap = {
@@ -38,8 +40,12 @@ local function splitString(inputstr, sep)
   return t
 end
 
+local function tokenErr(message, token)
+	error(message.." ("..token.file..", line "..token.line..")", 0)
+end
+
 local function getPredefinedIntPattern(n, token)
-	if (n < -2000 or n > 2000) then tokenError(tostring(n).." is out of range for predefined number patterns (-2000 to 2000)", token) end
+	if (n < -2000 or n > 2000 or math.floor(n) ~= n) then tokenErr(tostring(n).." is out of range for predefined number patterns (integers from -2000 to 2000)", token) end
 	local idx = n + 2000
 	local handle = io.open("/HexUtils/numbers_2000.txt", "r")
 	handle:seek("set", 26 * idx)
@@ -50,8 +56,8 @@ local function getPredefinedIntPattern(n, token)
 	return { iType = "pattern", startDir = startDir, angles = parts[2]:gsub("%s+", "") }
 end
 
-local function tokenErr(message, token)
-	error(message.." ("..token.file..", line "..token.line..")", 0)
+local function getNumberPattern(n, token) -- The intent is to have multiple methods later
+	return getPredefinedIntPattern(n, token)
 end
 
 local function addIota(self, iota)
@@ -136,7 +142,14 @@ local directives = {
 		autoEscape(self, dirTkn)
 		addIota(self, { iType = "greatSpell", value = spellNameTkn.value }) -- These are checked during emit
 	end,
-	
+
+	["num"] = function(self, dirTkn) -- .num [number]
+		local num = getDirArg(self, 1, "number", dirTkn)
+		local pattern = getNumberPattern(num.value, dirTkn)
+		autoEscape(self, dirTkn)
+		addIota(self, pattern)
+	end,
+
 	["str"] = function(self, dirTkn) -- .str [string|"string with whitespace"]
 		local tkn, err = self._tokenizer:next()
 		if (err) then error(err, 0) end
@@ -278,7 +291,7 @@ function Compiler:compile(targetFileName, targetDirectories)
 		if (type(nextToken.value) == "string" and #nextToken.value > 1 and nextToken.value:sub(1,1) == "\\" and not nextToken.value:find("^\\[}:;]")) then -- Any words starting with \ should be escaped
 			nextToken.value = nextToken.value:sub(2)
 			local num = tonumber(nextToken.value)
-			if (num ~= nil) then nextToken.value = num end
+			if (num ~= nil and nextToken.value:sub(1,1) ~= '.') then nextToken.value = num end
 			self._inlineEscape = true
 		else
 			self._inlineEscape = false
@@ -400,9 +413,16 @@ end
 
 function Compiler:_runDirective(dirTkn)
 	local dirName = dirTkn.value:sub(2)
-	local dirFunc = directives[dirName]
-	if (dirFunc == nil) then error("Invalid compiler directive '"..dirName.."' ("..dirTkn.file..", line "..dirTkn.line..")", 0) end
-	dirFunc(self, dirTkn)
+	local n = tonumber(dirName)
+	if (n ~= nil) then
+		local pattern = getNumberPattern(n, dirTkn)
+		autoEscape(self, dirTkn)
+		addIota(self, pattern)
+	else
+		local dirFunc = directives[dirName]
+		if (dirFunc == nil) then error("Invalid compiler directive '"..dirName.."' ("..dirTkn.file..", line "..dirTkn.line..")", 0) end
+		dirFunc(self, dirTkn)
+	end
 end
 
 local function duckyEmit(self, iota, list)
@@ -471,6 +491,34 @@ function Compiler:emit(mode, target)
 		else
 			error("Focal port write failed")
 		end
+	elseif (mode == Compiler.EmitMode.DuckyLink) then
+		local duckyList = {}
+		self._emitCount = 1
+		for i=1,#self._emitList do duckyEmit(self, self._emitList[i], duckyList) end
+		if (target == nil or (not target.sendIota) or (not target.numLinked)) then error("Provide a focal link peripheral", 2) end
+		if (target.numLinked() == 0) then error("Target focal link is not linked to anything", 2) end
+		if (target.numLinked() == 1) then
+			target.sendIota(0, duckyList)
+		else
+			print("Select a link: ")
+			for i,p in pairs(target.getLinked()) do
+				print(tostring(i).." : "..p)
+			end
+			term.write("> ")
+			local selection = tonumber(io.read())
+			if (selection == nil or selection < 1 or selection > target.numLinked()) then error("Invalid selection", 0) end
+			target.sendIota(selection - 1, duckyList)
+		end
+	elseif (mode == Compiler.EmitMode.DuckyLinkCircleBuilder) then
+		--[[
+			TODO
+			- Check for non-pattern iotas and error if found
+			- Send iotas one at a time through the link
+			- After sending an iota, wait for an ack iota to be returned before sending the next one
+			
+			- An artifact will receive the pattern, erase offhand slates, write it to the slate, place the slate, and send back an ack iota (shift-activate to clear queue) 
+		]]
+		
 	end
 end
 
