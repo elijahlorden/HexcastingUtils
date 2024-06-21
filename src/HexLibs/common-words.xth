@@ -30,3 +30,34 @@
 	random .pattern north_west aqaawd sub .2 mul
 	vector-wrap
 ;
+
+: unit-vector-to-angles //(vector - number(yaw) number(pitch))
+	vector-unwrap	//z y x
+	rot				//y z x
+	swap			//y x z
+	atan2			//y yaw
+	swap			//yaw y
+	asin			//yaw pitch
+;
+
+: angles-to-unit-vector //(number(yaw) number(pitch) - vector)
+	dup sin			//yaw pitch y
+	rrot			//y yaw pitch
+	cos				//y yaw xylen
+	swap			//y xylen yaw
+	2dup			//y xylen yaw xylen yaw
+	sin mul			//y xylen yaw z
+	rrot			//y z xylen yaw
+	cos mul			//y z x
+	rot				//z x y
+	swap			//z y x
+	vector-wrap		//result
+;
+
+: radians-to-degrees
+	.180 const-pi div mul
+;
+
+: degrees-to-radians
+	.180 const-pi div mul
+;

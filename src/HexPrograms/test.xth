@@ -3,9 +3,11 @@
 .include great-spells.xth
 .include hexal.xth
 
-//read-offhand reveal drop
+get-caster entity-position
+get-caster entity-lookvector reveal
 
-caster-raycast-block
-caster-raycast-block-face
-add
-place-block
+unit-vector-to-angles
+//swap .90 degrees-to-radians add swap
+angles-to-unit-vector reveal
+
+raycast-block break-block
