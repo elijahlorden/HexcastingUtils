@@ -9,9 +9,14 @@ To use:
 
 --- HexForth (.xth) language syntax ---
 
-Emit a number iota.  Currently you can't emit number patterns, this may be added later.
+Emit a number iota.
 ```
 1 //Emits the number 1
+```
+
+Emit a number pattern.  Currently only integers from -2000 to 2000 are supported.
+```
+.1 //Emits Numerical Reflection: 1
 ```
 
 Emit a string iota:
@@ -22,7 +27,8 @@ Emit a string iota:
 
 Emit a pattern iota:
 ```
-.pattern [direction] [angles] //Emits "Mind's Reflection"
+.pattern [direction] [angles]
+.pattern north_east qaq //Emits "Mind's Reflection"
 ```
 
 Emit a vector iota:
@@ -77,9 +83,10 @@ Block comment
 */
 ```
 
-Emitted iotas can be escaped with consideration by placing a backslash before the word:
+Emitted iotas can be escaped with consideration by placing a backslash before the word.  Directives can also be escaped like this:
 ```
 \100 //Emits consideration and then the number 100
+\.100 //Emits consideration and then Numerical Reflection: 100
 \.bool true //Emits consideration and then a true iota
 \ .bool true //Equivalent to above
 \{ 1 2 3 } //Emits consideration and then a list
