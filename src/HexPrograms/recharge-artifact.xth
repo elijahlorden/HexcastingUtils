@@ -1,0 +1,10 @@
+.include hex.xth
+.include common-words.xth
+
+caster-raycast-entity
+\{
+	caster-raycast-entity
+	recharge-offhand
+}
+write-artifact
+

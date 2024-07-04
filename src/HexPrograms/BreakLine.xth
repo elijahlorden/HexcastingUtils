@@ -1,0 +1,43 @@
+.include hex.xth
+.include common-words.xth
+
+.global recurse
+.global idx
+.init-globals
+
+caster-raycast-block
+dup break-block
+caster-raycast-block-face
+.-1 mul
+
+.0 g!idx
+
+\{
+	g@idx .7 ?gt
+	{}
+	\{
+		2dup
+		
+		g@idx
+		.1 add dup
+		g!idx
+		mul add break-block
+		
+		g@recurse eval
+	} ? eval
+} dup g!recurse eval
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

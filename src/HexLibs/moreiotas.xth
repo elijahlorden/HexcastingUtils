@@ -1,0 +1,86 @@
+// ================ Matrices ================ \\
+
+
+
+
+// ================ Strings ================ \\
+
+
+: str:concat //(string string - string)
+	
+;
+
+: str:split //(string string(delimeter) - string)
+
+;
+
+: str:tonumber //(string - number|null)
+
+;
+
+: str:indexof //(string string - string)
+
+;
+
+: str:substring //(string number(start) number(stop) - string)
+
+;
+
+: str:length //(string - number)
+
+;
+
+: str:create-empty //( - string)
+
+;
+
+: str:create-space //( - string)
+
+;
+
+: str:create-newline //( - string)
+
+;
+
+: str:get-chat-anyone //( - string)
+
+;
+
+: str:set-chat-prefix //(string|null - )
+
+;
+
+: str:get-chat-prefix //( - string|null)
+
+;
+
+: str:read-block //(vector - string|[string])
+
+;
+
+: str:write-block //(vector string|[string] - )
+
+;
+
+: string:tostring //(any - string)
+	.pattern east wawqwawaw
+;
+
+: string:pattern-name //(pattern - string|null)
+
+;
+
+: string:entity-name //(entity - string)
+
+;
+
+: string:set-entity-name //(string entity - )
+
+;
+
+: string:case //(string bool|null - string)
+
+;
+
+
+

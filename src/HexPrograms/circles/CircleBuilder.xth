@@ -1,0 +1,42 @@
+.include hex.xth
+.include common-words.xth
+.include hexal.xth
+
+caster-raycast-entity
+\{
+	?caster-sneaking
+	\{
+		hexal:receive-clear
+	}
+	\{
+		hexal:receive-iota
+		dup
+		hexal:iota-type \.hexal-iotatype hexcasting:pattern ?eq
+		\{ //Iota is a pattern
+			erase-offhand
+			write-offhand
+			caster-raycast-block
+			caster-raycast-block-face
+			add
+			place-block
+		}
+		{} ? eval //Do nothing if the iota isn't a pattern
+		.0 \.str "get-next-iota" hexal:send-iota
+	}
+	? eval
+}
+write-artifact
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -2,6 +2,7 @@
 
 // ================ Base-mod Great Spells ================ \\
 
+
 : create-lava //(vector - )
 	.great-spell "Create Lava"
 ;
@@ -34,12 +35,13 @@
 	.great-spell "Flay Mind"
 ;
 
-// ================ Zeniths ================ \\
-
-
 : greater-teleport //(entity - vector)
 	.great-spell "Greater Teleport"
 ;
+
+
+// ================ Zeniths ================ \\
+
 
 : apply-regeneration //(entity number number - )
 	.great-spell "White Sun's Zenith"
@@ -63,6 +65,7 @@
 
 
 // ================ Hexal Great Spells ================ \\
+
 
 : hexal:accelerate-tick //(vector - )
 	.great-spell "Hexal:Accelerate"

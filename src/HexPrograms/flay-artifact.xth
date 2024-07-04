@@ -1,0 +1,16 @@
+.include hex.xth
+.include common-words.xth
+.include great-spells.xth
+
+caster-raycast-entity
+\{
+	?caster-sneaking
+	\{
+		caster-raycast-block write-offhand
+	}
+	\{
+		caster-raycast-entity read-offhand flay-mind
+	}
+	? eval
+}
+write-artifact

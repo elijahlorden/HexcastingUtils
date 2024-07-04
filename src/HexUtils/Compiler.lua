@@ -29,6 +29,10 @@ local numberDirectionMap = {
 	nw = "north_west"
 }
 
+local hexalIotaTypes = {
+	["hexcasting:pattern"] = true
+}
+
 local function splitString(inputstr, sep)
   if sep == nil then
     sep = "%s"
@@ -97,6 +101,21 @@ local function getWord(self, name, token)
 	local word = self._words[name]
 	if (word == nil) then tokenErr(tostring(token.value).." requires the '"..name.."' word to be defined", token) end
 	return word
+end
+
+local function duckySelectLink(target)
+	if (target.numLinked() == 1) then
+		return 0
+	else
+		print("Select a link: ")
+		for i,p in pairs(target.getLinked()) do
+			print(tostring(i).." : "..p)
+		end
+		term.write("> ")
+		local selection = tonumber(io.read())
+		if (selection == nil or selection < 1 or selection > target.numLinked()) then error("Invalid selection", 0) end
+		return selection - 1
+	end
 end
 
 local directives = {
@@ -186,8 +205,10 @@ local directives = {
 	
 	["hexal-iotatype"] = function(self, dirTkn) -- .hexal-iotatype [name]
 		local name = getDirArg(self, 1, "string", dirTkn)
+		name = name.value:lower()
+		if (not hexalIotaTypes[name]) then tokenErr("Unknown iota type, see hexalIotaTypes in HexLibs/compiler.lua", dirTkn) end
 		autoEscape(self, dirTkn)
-		addIota(self, { iType = "hexal:iotatype", value = name.value, token = dirTkn })
+		addIota(self, { iType = "hexal:iotatype", value = name, token = dirTkn })
 	end,
 	
 	["hexal-entitytype"] = function(self, dirTkn) -- .hexal-entitytype [name]
@@ -459,6 +480,7 @@ local function duckyEmit(self, iota, list)
 end
 
 function Compiler:emit(mode, target)
+	if (#self._emitList == 0) then error("No compiled iotas to emit", 0) return end
 	if (mode == Compiler.EmitMode.DumpToFile) then
 		local handle = io.open(target, "w+")
 		handle:write(textutils.serialize(self._emitList))
@@ -497,28 +519,37 @@ function Compiler:emit(mode, target)
 		for i=1,#self._emitList do duckyEmit(self, self._emitList[i], duckyList) end
 		if (target == nil or (not target.sendIota) or (not target.numLinked)) then error("Provide a focal link peripheral", 2) end
 		if (target.numLinked() == 0) then error("Target focal link is not linked to anything", 2) end
-		if (target.numLinked() == 1) then
-			target.sendIota(0, duckyList)
-		else
-			print("Select a link: ")
-			for i,p in pairs(target.getLinked()) do
-				print(tostring(i).." : "..p)
-			end
-			term.write("> ")
-			local selection = tonumber(io.read())
-			if (selection == nil or selection < 1 or selection > target.numLinked()) then error("Invalid selection", 0) end
-			target.sendIota(selection - 1, duckyList)
-		end
+		local idx = duckySelectLink(target)
+		target.sendIota(idx, duckyList)
 	elseif (mode == Compiler.EmitMode.DuckyLinkCircleBuilder) then
-		--[[
-			TODO
-			- Check for non-pattern iotas and error if found
-			- Send iotas one at a time through the link
-			- After sending an iota, wait for an ack iota to be returned before sending the next one
-			
-			- An artifact will receive the pattern, erase offhand slates, write it to the slate, place the slate, and send back an ack iota (shift-activate to clear queue) 
-		]]
+		-- Only patterns can be written onto slates.  Throw an error if this spell contains anything other than patterns.
+		for i=1,#self._emitList do if (self._emitList[i].iType ~= "pattern") then if (self._emitList[i].token) then tokenErr("Circles don't support non-pattern iotas", self._emitList[i].token) else error("Circles don't support non-pattern iotas", 0) end end end
 		
+		local duckyList = {}
+		self._emitCount = 1
+		for i=1,#self._emitList do duckyEmit(self, self._emitList[i], duckyList) end
+		
+		if (target == nil or (not target.sendIota) or (not target.numLinked)) then error("Provide a focal link peripheral", 2) end
+		if (target.numLinked() == 0) then error("Target focal link is not linked to anything", 2) end
+		local linkIdx = duckySelectLink(target)
+		local idx = 1
+		local nextIotaString = "get-next-iota"
+		
+		target.clearReceivedIotas()
+		print("Waiting for caster")
+		
+		while true do
+			local event = os.pullEvent()
+			if (event == "received_iota") then
+				local promptIota = target.receiveIota()
+				if (type(promptIota) == "string" and promptIota == nextIotaString) then
+					print("Sending next iota")
+					target.sendIota(linkIdx, duckyList[idx])
+					idx = idx + 1
+					if (idx > #duckyList) then print("Last iota sent") break else print("Waiting for caster") end
+				end
+			end
+		end
 	end
 end
 

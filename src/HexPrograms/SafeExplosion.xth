@@ -1,0 +1,51 @@
+.include hex.xth
+.include common-words.xth
+.include hexal.xth
+.include moreiotas.xth
+
+caster-raycast-entity
+dup
+any-to-bool
+\{
+    entity-position-feet
+}
+\{
+    caster-raycast-block
+    dup
+    any-to-bool
+    \{
+        caster-raycast-block-face
+        add
+    }
+    \{ null } ? eval
+} ? eval
+
+
+dup any-to-bool
+\{
+    dup hexal:item-type  //pos itemtype
+    string:tostring      //pos name
+    dup \.str Air ?eq
+    \{ //Block is air
+        drop dup dup 2dup
+        create-water
+        .4 create-explosion
+        conjure-block
+        break-block        
+    }
+    \{
+        \.str Water ?eq
+        \{ //Block is water
+            .4 create-explosion
+        }
+        {} ? eval //Block is not air or water
+    } ? eval
+}
+{} ? eval
+
+
+
+
+
+
+

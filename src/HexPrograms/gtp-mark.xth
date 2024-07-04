@@ -1,6 +1,8 @@
 .include hex.xth
 .include common-words.xth
 .include great-spells.xth
-.include hexal.xth
 
-.1 .2 .3 .4 .5 .6 .7 .8 .9 .10
+get-caster
+entity-position
+write-offhand
+

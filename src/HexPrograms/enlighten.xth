@@ -1,0 +1,9 @@
+.include hex.xth
+
+get-caster
+
+create-vector-pos-y
+\4.75
+mul
+
+apply-impulse
