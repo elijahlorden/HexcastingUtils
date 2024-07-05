@@ -235,4 +235,79 @@
 
 
 // ================ Motes ================ \\
+
+
+: hexal:bind-storage //(vector - )
+	.pattern north_west qaqwqaqwqaq //Bind Storage
+;
+
+: hexal:bind-storage-temp //(vector - )
+	.pattern north_east edewedewede //Bind Storage - Temporary
+;
+
+: hexal:nexus-item-types //( - [itemtype])
+	.pattern north_east dwqqqqqwddww //Stocktake Reflection
+;
+
+: hexal:find-motes //(mote|itemtype - [mote])
+	.pattern south_east aweeeeewaaww //Stocktake Purification
+;
+
+: hexal:nexus-capacity //( - number)
+	.pattern south_east awedqdewa //Capacity Reflection
+;
+
+: hexal:?nexus-contains-mote //(vector itemtype|mote - boolean)
+	.pattern north_east dwqaeaqwd //Containment Distillation
+;
+
+: hexal:mediafy-item //(item | item mote - mote)
+	.pattern west eaqa //Mediafy Item
+;
+
+: hexal:return-item //(mote vector | mote vector number)
+	.pattern east qded //Return Item
+;
+
+: hexal:mote-itemcount //(mote - number)
+	.pattern north_west qqqqwqqqqqaa //Weighing Purification
+;
+
+: hexal:combine-motes //(mote mote - mote)
+	.pattern north_west aqaeqded //Stacking Distillation
+;
+
+: hexal:?mote-combine //(mote mote|item - bool)
+	.pattern south_west dedqeaqa //Stacking Distillation 2
+;
+
+: hexal:split-mote //(mote int - mote mote)
+	.pattern east eaqaaw //Splitting Gambit
+;
+
+: hexal:mote-nexus-position //(mote - vector)
+	.pattern south_west qqqqqaw //Depot Purification
+;
+
+: hexal:move-mote //(mote vector - mote)
+	.pattern south_east eeeeedw //Depot Gambit
+;
+
+: hexal:craft //(mote | [mote] | [[mote]] - [mote])
+	
+;
+
+: hexal:villager-level //(villager - number)
+
+;
+
+: hexal:villager-trades //(villager - complicated) TODO: document list structure for my sanity
+
+;
+
+: hexal:trade //(villager [mote] number? - mote)
+
+;
+
+
 // ================ Gates ================ \\

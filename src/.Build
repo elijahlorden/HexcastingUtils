@@ -11,6 +11,8 @@ compiler:compile(target, { "/HexLibs", "/HexPrograms" })
 
 if (emitMode == "port") then
 	compiler:emit(Compiler.EmitMode.DuckyFocalPort, peripheral.find("focal_port"))
+elseif (emitMode == "single") then
+	compiler:emit(Compiler.EmitMode.DuckyFocalPortSingle, peripheral.find("focal_port"))
 elseif (emitMode == "file") then
 	compiler:emit(Compiler.EmitMode.DuckyDumpToFile, emitTargetFile)
 elseif (emitMode == "link") then

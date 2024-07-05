@@ -1,0 +1,19 @@
+.include hexal.xth
+
+: hexal:store-item //(item - mote)
+	dup						//item item
+	hexal:item-type			//item itemtype
+	hexal:find-motes		//item [mote]
+	dup length				//item [mote] listlength
+	reveal
+	.0 ?gt
+	( //List has a mote
+		list-pop			//item list mote
+		swap drop			//item mote
+		hexal:mediafy-item	//mote
+	)
+	( //List doesn't have a mote
+		drop				//item
+		hexal:mediafy-item	//mote
+	) ? eval
+;

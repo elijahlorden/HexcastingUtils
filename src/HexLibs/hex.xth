@@ -391,6 +391,8 @@
 	.pattern north_east qqaeaae //Vacant Reflection
 ;
 
+: () {} ;
+
 : list-wrap //(any - list)
 	.pattern east adeeed //Single's Purification
 ;
@@ -538,7 +540,7 @@
 	.pattern south_west eaqwqaewede //Lodestone Reflection
 ;
 
-: get-circle-lower-north-west //( - vector)
+: get-circle-lower-north-west-position //( - vector)
 	.pattern south_west eaqwqaewdd //Lesser Fold Reflection
 ;
 

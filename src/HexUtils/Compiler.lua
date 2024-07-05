@@ -223,6 +223,12 @@ local directives = {
 		addIota(self, { iType = "hexal:itemtype", value = name.value, token = dirTkn })
 	end,
 	
+	["hexal-blocktype"] = function(self, dirTkn) -- .hexal-itemtype [name]
+		local name = getDirArg(self, 1, "string", dirTkn)
+		autoEscape(self, dirTkn)
+		addIota(self, { iType = "hexal:blocktype", value = name.value, token = dirTkn })
+	end,
+	
 	["escape-on"] = function(self, dirTkn) -- Enable auto-escaping literal iotas.  Requires the 'push-iota' word to be defined.
 		if (not self._words["\\"]) then tokenErr(".escape-on requires the word '\\' to be defined", dirTkn) end
 		self._autoEscape = true
@@ -241,23 +247,25 @@ local directives = {
 	end,
 	
 	["init-globals"] = function(self, dirTkn) -- Write a list of NULLs to the ravenmind, one entry for each global
-		local wEscape = self._words["\\"]
-		if (wEscape == nil) then tokenErr(".global-init requires the '\\' word to be defined", dirTkn) end
+		if (self._nGlobals == 0) then return end
 		
-		local wWriteRavenmind = self._words["write-ravenmind"]
-		if (wWriteRavenmind == nil) then tokenErr(".global-init requires the 'write-ravenmind' word to be defined", dirTkn) end
+		local wEscape = getWord(self, "\\", dirTkn)
+		local wWriteRavenmind = getWord(self, "write-ravenmind", dirTkn)
+		local wNull = getWord(self, "null", dirTkn)
+		local wRep = getWord(self, "rep", dirTkn)
+		local wWrapMany = getWord(self, "list-wrap-many", dirTkn)
 		
 		local patterns = {}
 		
-		local list = {}
-		for i=1,self._nGlobals do table.insert(list, { iType = "null", token = dirTkn }) end
+		local function addWord(w) for i=1,#w do table.insert(patterns, w[i]) end end
 		
-		-- Escape word
-		for i=1,#wEscape do table.insert(patterns, wEscape[i]) end
-		-- List iota
-		table.insert(patterns, { iType = "list", value = list, token = dirTkn })
-		-- Write ravenmind iota
-		for i=1,#wWriteRavenmind do table.insert(patterns, wWriteRavenmind[i]) end
+		-- null # rep # list-wrap-many write-ravenmind
+		addWord(wNull)
+		table.insert(patterns, getNumberPattern(self._nGlobals, dirTkn))
+		addWord(wRep)
+		table.insert(patterns, getNumberPattern(self._nGlobals, dirTkn))
+		addWord(wWrapMany)
+		addWord(wWriteRavenmind)
 		
 		if (self._autoEscape or self._inlineEscape) then
 			addIotas(self, wEscape)
@@ -469,6 +477,8 @@ local function duckyEmit(self, iota, list)
 		table.insert(list, { entityType = iota.value })
 	elseif (iota.iType == "hexal:itemtype") then
 		table.insert(list, { itemType = iota.value, isItem = true })
+	elseif (iota.iType == "hexal:blocktype") then
+		table.insert(list, { itemType = iota.value, isItem = false })
 	else
 		if (iota.token) then
 			tokenErr("Iota type '"..iota.iType.."' is not supported for DuckyFocalPort emit", iota.token)
@@ -505,6 +515,7 @@ function Compiler:emit(mode, target)
 		end
 	elseif (mode == Compiler.EmitMode.DuckyFocalPortSingle) then
 		local duckyList = {}
+		self._emitCount = 0
 		duckyEmit(self, self._emitList[1], duckyList)
 		if (target == nil or (not target.writeIota) or (not target.hasFocus)) then error("Provide a focal port peripheral", 2) end
 		if (not target.hasFocus()) then error("Target focal port is empty", 0) end

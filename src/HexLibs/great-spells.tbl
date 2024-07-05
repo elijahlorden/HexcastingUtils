@@ -1,20 +1,26 @@
 {
   {
-    type = "greatSpell",
-    startDir = "west",
-    name = "Flay Mind",
     angles = "adewewewedqwedewqdewqdedaedwe",
+    type = "greatSpell",
+    name = "Flay Mind",
+    startDir = "west",
   },
   {
+    type = "greatSpell",
     startDir = "south_east",
-    angles = "wawqwaweweqqwddwwqdedaeewaedwewwwewewewwwewawdwewdw",
     name = "Hexal:Consume Wisp",
+    angles = "wawqwaweweqqwddwwqdedaeewaedwewwwewewewwwewawdwewdw",
+  },
+  {
+    startDir = "north_west",
+    angles = "qqdqqwqqwwwqqqwwwaqqdqqwqqwwwqq",
+    name = "Greater Teleport",
     type = "greatSpell",
   },
   {
-    angles = "qqdqqwqqwwwqqqwwwaqqdqqwqqwwwqq",
+    angles = "dwaqeqqwdeeewdwaqeqwqqawd",
     type = "greatSpell",
-    name = "Greater Teleport",
-    startDir = "north_west",
+    name = "Hexal:Accelerate",
+    startDir = "north_east",
   },
 }

@@ -54,10 +54,34 @@
 	vector-wrap		//result
 ;
 
-: radians-to-degrees
+: radians-to-degrees //(number - number)
 	.180 const-pi div mul
 ;
 
-: degrees-to-radians
-	.180 const-pi div mul
+: degrees-to-radians //(number - number)
+	const-pi .180 div mul
+;
+
+: get-impetus-facing-entity //(number - entity|null)
+	create-vector-pos-y
+	mul
+	get-impetus-position
+	get-impetus-lookvector
+	add
+	add
+	position-entity
+;
+
+: get-circle-interior-size //( - vector)
+	get-circle-upper-south-east-position
+	get-circle-lower-north-west-position
+	sub
+	.1 .0 .1 vector-wrap
+	sub
+;
+
+: get-circle-lower-north-west-interior-position //( - vector)
+	get-circle-lower-north-west-position
+	.1 .0 .1 vector-wrap
+	add
 ;
