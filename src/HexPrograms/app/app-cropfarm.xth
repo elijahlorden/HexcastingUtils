@@ -1,0 +1,74 @@
+.include hex.xth
+.include common-words.xth
+.include great-spells.xth
+.include hexal.xth
+.include hexal-words.xth
+
+.global cropitem
+.global seeditem
+.global xlen
+.global zlen
+.global endidx
+.global idx
+.global jump
+
+//Calculate parameters
+
+get-circle-interior-size
+
+vector-unwrap   //z y x
+swap            //z x y
+drop            //z x
+2dup g!xlen g!zlen
+mul .1 sub g!endidx
+
+.0 g!idx
+
+//Loop over interior positions
+
+( g!jump ) eval/cc
+                            
+g@idx                       //idx
+dup g@zlen mod              //idx z
+over g@xlen div floor       //idx z x
+.1 swap                     //idx z 1 x (offset y by 1)
+
+vector-wrap get-circle-lower-north-west-interior-position add
+
+dup break-block             //idx pos
+
+//Place seeds from nexus and bonemeal
+
+g@seeditem hexal:find-motes //idx pos [mote]
+dup length                  //idx pos [mote] length
+.0 ?gt
+(                           //idx pos [mote]
+    list-pop swap drop      //idx pos seed-mote
+    over                    //idx pos seed-mote pos
+    hexal:place-block       //idx pos
+    dup dup                 //idx pos pos pos
+    overgrow overgrow overgrow
+)
+( drop drop ) ? eval        //idx
+
+//Increment index and execute jump
+
+.1 add dup g!idx            //idx
+g@endidx                    //idx endidx
+?gt () ( g@jump eval ) ? eval
+
+//store all crop and seed items
+
+(    //item
+    dup hexal:item-type           //item itemtype
+    g@seeditem over g@cropitem    //item itemtype seeditem itemtype cropitem
+    ?eq rrot ?eq or               //item ?is-seed-or-crop
+    ( hexal:store-item ) () ? eval
+)
+get-impetus-position
+.256
+zone-items
+map drop
+
+//Query storage
+.include app-nexus-querylist.xth

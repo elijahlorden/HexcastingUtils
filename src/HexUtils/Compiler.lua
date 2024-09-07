@@ -12,12 +12,13 @@ local directions = {
 }
 
 Compiler.EmitMode = {
-	DumpToFile = 1, -- Serialize output iotas and write to file
-	DuckyDumpToFile = 2, -- Convert output iotas to Ducky's Peripherals format and write to file
-	DuckyFocalPort = 3, -- Write output iotas to a Ducky's Peripherals focal port as a list
-	DuckyFocalPortSingle = 4, -- Write first output iota to a Ducky's Peripherals focal port
-	DuckyLink = 5, -- Send the output iotas as a list over an attached focal link
-	DuckyLinkCircleBuilder = 6 -- Used in conjunction with the circle builder artifact
+	DumpToFile = 1,                 -- Serialize output iotas and write to file
+	DuckyDumpToFile = 2,            -- Convert output iotas to Ducky's Peripherals format and write to file
+	DuckyFocalPort = 3,             -- Write output iotas to a Ducky's Peripherals focal port as a list
+	DuckyFocalPortSingle = 4,       -- Write first output iota to a Ducky's Peripherals focal port
+	DuckyLink = 5,                  -- Send the output iotas as a list over an attached focal link
+	DuckyLinkCircleBuilder = 6,     -- Used in conjunction with the circle builder artifact
+    DuckyList = 7                   -- Return the list of emitted iotas
 }
 
 local numberDirectionMap = {
@@ -261,9 +262,9 @@ local directives = {
 		
 		-- null # rep # list-wrap-many write-ravenmind
 		addWord(wNull)
-		table.insert(patterns, getNumberPattern(self._nGlobals, dirTkn))
+		table.insert(patterns, { iType = "#globals", token = dirTkn })
 		addWord(wRep)
-		table.insert(patterns, getNumberPattern(self._nGlobals, dirTkn))
+		table.insert(patterns, { iType = "#globals", token = dirTkn })
 		addWord(wWrapMany)
 		addWord(wWriteRavenmind)
 		
@@ -454,6 +455,10 @@ function Compiler:_runDirective(dirTkn)
 	end
 end
 
+function Compiler:getGlobals()
+    return textutils.unserialize(textutils.serialize(self._globals)), self._nGlobals
+end
+
 local function duckyEmit(self, iota, list)
 	if (iota.iType == "list") then
 		local emitList = {}
@@ -467,6 +472,9 @@ local function duckyEmit(self, iota, list)
 		table.insert(list, { startDir = pattern.startDir:upper(), angles = pattern.angles })
 	elseif (iota.iType == "number" or iota.iType == "string" or iota.iType == "bool") then
 		table.insert(list, iota.value)
+    elseif (iota.iType == "#globals") then
+        local pattern = getNumberPattern(self._nGlobals, iota.token)
+        table.insert(list, { startDir = pattern.startDir:upper(), angles = pattern.angles })
 	elseif (iota.iType == "null") then
 		table.insert(list, { null = true })
 	elseif (iota.iType == "vector") then
@@ -561,6 +569,12 @@ function Compiler:emit(mode, target)
 				end
 			end
 		end
+    elseif (mode == Compiler.EmitMode.DuckyList) then
+		local duckyList = {}
+		self._emitCount = 1
+		for i=1,#self._emitList do duckyEmit(self, self._emitList[i], duckyList) end
+        print("Compiled "..tostring(self._emitCount).." iotas")
+        return duckyList
 	end
 end
 

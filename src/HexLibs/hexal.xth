@@ -38,6 +38,22 @@
 ;
 
 
+// ================ Hexal Maths ================ \\
+
+
+: hexal:factorial //(number - number)
+    .pattern south_east wawdedwaw //Factorial Purification
+;
+
+: hexal:running-sum //([number] - [number])
+    .pattern west aea //Running Sum Purification
+;
+
+: hexal:running-product //([number] - [number])
+    .pattern north_east qaawaaq //Running Product Purification
+;
+
+
 // ================ Types ================ \\
 
 
@@ -271,7 +287,7 @@
 
 : hexal:mote-itemcount //(mote - number)
 	.pattern north_west qqqqwqqqqqaa //Weighing Purification
-;
+;                       
 
 : hexal:combine-motes //(mote mote - mote)
 	.pattern north_west aqaeqded //Stacking Distillation

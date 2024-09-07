@@ -1,0 +1,71 @@
+--[[
+    App file example
+    {
+        name = "App Name",
+        hexes = { "filename.xth" },
+        params = { { name = "paramname", type = "[string|number]" } }
+    }
+--]]
+
+local function readFile(path)
+	local handle = io.open(path, "r")
+	local str = handle:read("a")
+	handle:close()
+	return str
+end
+
+local function writeFile(path, text)
+	local handle = io.open(path, "w")
+	local str = handle:write(text)
+	handle:close()
+	return str
+end
+
+local appFileStartingLua = readFile("/HexUtils/AppBoilerplate.lua")
+
+local appName, folder = ...
+
+local appFilePath = "/HexApps/"..appName..".tbl"
+local appStartupPath = "/HexApps/"..appName..".lua"
+
+if (not fs.exists(appFilePath)) then error("Unknown app '"..appName.."'", 0) end
+if (not fs.exists(appStartupPath)) then error("App '"..appName.."' is missing a corresponding .lua startup file", 0) end
+
+if (type(folder) ~= "string" or folder == "") then error("Usage .BuildApp [appname] [folder]", 0) end 
+if (not fs.isDir(folder)) then error("'"..folder.."' is not a directory", 0) end
+
+local existingFiles = fs.list(folder)
+if (#existingFiles > 0) then
+    term.write("Delete existing files and build app? (y/n) > ")
+    local answer = read():lower()
+    if (answer ~= "y") then return end
+end
+
+for i=1,#existingFiles do fs.delete(fs.combine(folder, existingFiles[i])) end
+
+local settings = textutils.unserialize(readFile(appFilePath))
+local startupFile = readFile(appStartupPath)
+
+local hexes = {}
+
+local Compiler = require("HexUtils/Compiler")
+
+for i=1,#settings.hexes do
+    local hexName = settings.hexes[i]
+    print("-- Compiling "..hexName.." --")
+    local compiler = Compiler.new()
+    compiler:compile(hexName, { "/HexLibs", "/HexPrograms" })
+    hexes[hexName] = {
+        hex = compiler:emit(Compiler.EmitMode.DuckyList),
+        globals = compiler:getGlobals()
+    }
+end
+
+print("-- Writing Startup File --")
+
+local smallfolk = require("HexUtils/smallfolk")
+local smallfolkEmbed = ("smallfolk = (function() "..readFile("HexUtils/smallfolk.lua").." end)()"):gsub("\n", " ")
+
+local finalStartupFile = table.concat({appFileStartingLua, "\n\n", smallfolkEmbed, "\n", "hexapp.hexes = smallfolk.loads([===[", smallfolk.dumps(hexes), "]===])", "\n\n", startupFile})
+
+writeFile(fs.combine(folder, "startup.lua"), finalStartupFile)

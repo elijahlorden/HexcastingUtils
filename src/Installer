@@ -1,0 +1,119 @@
+local tArgs = {...}
+
+local repoName = "elijahlorden/HexcastingUtils"
+
+local manifestIgnore = {
+    "^Installer",
+    "^InstallerManifest.tbl",
+    "^.settings",
+    "^%a+.lua$",
+    "^%a+.txt$"
+}
+
+function isIgnoredFile(path)
+    for i=1,#manifestIgnore do
+        if (string.find(path, manifestIgnore[i])) then return true end
+    end
+    return false
+end
+
+function buildManifest()
+    local function recurse(dir, tbl)
+        for i,filename in ipairs(fs.list(dir)) do
+            local path = fs.combine(dir, filename)
+            if (fs.isDir(path) and (not fs.isDriveRoot(path))) then
+                recurse(path, tbl)
+            elseif ((not fs.isDriveRoot(path)) and (not isIgnoredFile(path))) then
+                table.insert(tbl, path)
+            end
+        end
+    end
+    local manifest = {}
+    recurse("/", manifest)
+    local handle = fs.open("/InstallerManifest.tbl", "w+")
+    handle.write(textutils.serialize(manifest))
+    handle.close()
+end
+
+function uriCombine(...)
+    local parts = {...}
+    local uriParts = {}
+    for i=1,#parts do
+        local part = parts[i]
+        if (part:sub(1,1) == "/") then part = part:sub(2) end
+        if (part:sub(-1) == "/") then part = part:sub(1,#part-1) end
+        table.insert(uriParts, part)
+    end
+    return table.concat(uriParts, "/")
+end
+
+function findReleaseTag(release)
+    local releaseUri = uriCombine("https://github.com/", repoName, "releases", release)
+    local response = http.get({ url = releaseUri, redirect = false })
+    if (response == nil) then return nil end
+    local code = response.getResponseCode()
+    if (code >= 200 and code <= 299) then -- No redirect, the release string is the tag
+        return release
+    elseif (code >= 300 and code <= 399) then -- Redirect, get tag from redirect URL
+        local headers = response.getResponseHeaders()
+        local location = headers.Location
+        if (type(location) ~= "string") then return nil end
+        local _, tagEndIdx = string.find(location, uriCombine("https://github.com/", repoName, "releases/tag"))
+        if (not tagEndIdx) then return nil end
+        return location:sub(tagEndIdx + 2)
+    else
+        return nil
+    end
+end
+
+function getRawFile(tag, path)
+    local response = http.get(uriCombine("https://raw.githubusercontent.com/", repoName, tag, path))
+    if (not response) then error("GitHub content request failed, try again later", 0) end
+    local content = response.readAll()
+    os.sleep(0.8) -- Artificial delay to hopefully prevent exceeding the rate limit
+    return content
+end
+
+function install(release)
+    local tag = findReleaseTag(release)
+    if (not tag) then error("Failed to find release '"..release.."' in repoistory '"..repoName.."'", 0) end
+    
+    local manifest = getRawFile(tag, "src/InstallerManifest")
+
+    --print(uriCombine("https://raw.githubusercontent.com/", repoName, release))
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (#tArgs == 1) then
+    if (tArgs[1]:lower() == "build-manifest") then
+        buildManifest()
+    else
+        install(tArgs[1])
+    end
+else
+    error("Incorrect argument count", 0)
+end

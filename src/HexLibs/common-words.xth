@@ -2,6 +2,10 @@
 
 // ================ Common Words ================ \\
 
+: drop-all //(many - )
+    get-stack-size list-wrap-many drop
+;
+
 : caster-raycast-block //( - vector)
 	get-caster entity-position
 	get-caster entity-lookvector

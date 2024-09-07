@@ -1,0 +1,20 @@
+.include hex.xth
+.include hexal.xth
+.include common-words.xth
+.include great-spells.xth
+
+/*get-impetus-position
+create-vector-pos-y
+add
+position-entity
+read-entity
+list-unwrap
+write-ravenmind
+eval*/
+
+get-impetus-position
+create-vector-pos-y
+add
+position-entity
+read-ravenmind
+write-entity

@@ -5,7 +5,6 @@
 	hexal:item-type			//item itemtype
 	hexal:find-motes		//item [mote]
 	dup length				//item [mote] listlength
-	reveal
 	.0 ?gt
 	( //List has a mote
 		list-pop			//item list mote
