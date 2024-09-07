@@ -18,6 +18,7 @@
   "HexPrograms/CAD-artifact.xth",
   "HexPrograms/SafeExplosion.xth",
   "HexPrograms/app/app-CAD.xth",
+  "HexPrograms/app/app-cropfarm-query.xth",
   "HexPrograms/app/app-cropfarm.xth",
   "HexPrograms/app/app-nexus-querylist.xth",
   "HexPrograms/circles/CircleBuilder.xth",
@@ -45,4 +46,5 @@
   "HexUtils/Tokenizer.lua",
   "HexUtils/numbers_2000.txt",
   "HexUtils/smallfolk.lua",
+  "Install",
 }

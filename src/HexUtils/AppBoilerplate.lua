@@ -61,6 +61,19 @@ function hexapp.configNumber(...)
     end
 end
 
+function hexapp.configBool(...)
+    local tArgs = {...}
+    if (#tArgs > 1) then
+        local v = not not tArgs[2]
+        hexapp._cfg[ tArgs[1] ] = v
+        return v
+    elseif (#tArgs == 1) then
+        return not not hexapp._cfg[ tArgs[1] ]
+    else
+        return hexapp._cfg
+    end
+end
+
 -- =========== Hex Helpers =========== --
 
 function hexapp.getHex(name)
@@ -133,7 +146,7 @@ end
 
 function hexapp.getCircleResult(name, port, impetus) -- Returns (nil, mishap) or {globals}
     local mishap = impetus.getLastMishap()
-    if (mishap ~= "") then return nil, mishap end
+    if (mishap ~= "" and mishap ~= "That pattern isn't associated with any action") then return nil, mishap end -- I use an invalid pattern to end the circle early
     local returnIota = port.readIota()
     if (hexapp.iotaType(returnIota) ~= "list") then return nil, "Returned iota was not a list" end
     return hexapp.unpackGlobals(name, returnIota)
@@ -275,4 +288,11 @@ function hexapp.createMomentaryButton(parent, x, y, w, h, text)
     :setBackground(colors.lightBlue)
     :onClick(function(self) self:setBackground(colors.blue) end)
     :onRelease(function(self) self:setBackground(colors.lightBlue) end)
+end
+
+
+-- =========== Misc. Helpers =========== --
+
+function hexapp.formatNumber(n)
+  return tostring(n):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
 end

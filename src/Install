@@ -3,7 +3,6 @@ local tArgs = {...}
 local repoName = "elijahlorden/HexcastingUtils"
 
 local manifestIgnore = {
-    "^Installer",
     "^InstallerManifest.tbl",
     "^.settings",
     "^%a+.lua$",
@@ -47,14 +46,14 @@ function uriCombine(...)
     return table.concat(uriParts, "/")
 end
 
-function findReleaseTag(release)
+function findReleaseTag(release) -- This is kinda hacky and probably not correct, but it works for now
     local releaseUri = uriCombine("https://github.com/", repoName, "releases", release)
     local response = http.get({ url = releaseUri, redirect = false })
     if (response == nil) then return nil end
     local code = response.getResponseCode()
     if (code >= 200 and code <= 299) then -- No redirect, the release string is the tag
         return release
-    elseif (code >= 300 and code <= 399) then -- Redirect, get tag from redirect URL
+    elseif (code >= 300 and code <= 399) then -- Redirect, get the tag from the redirect URL
         local headers = response.getResponseHeaders()
         local location = headers.Location
         if (type(location) ~= "string") then return nil end
@@ -68,9 +67,9 @@ end
 
 function getRawFile(tag, path)
     local response = http.get(uriCombine("https://raw.githubusercontent.com/", repoName, tag, path))
-    if (not response) then error("GitHub content request failed, try again later", 0) end
+    if (not response) then return nil end
     local content = response.readAll()
-    os.sleep(0.8) -- Artificial delay to hopefully prevent exceeding the rate limit
+    os.sleep(0.5) -- Artificial delay to hopefully prevent exceeding the rate limit
     return content
 end
 
@@ -78,9 +77,26 @@ function install(release)
     local tag = findReleaseTag(release)
     if (not tag) then error("Failed to find release '"..release.."' in repoistory '"..repoName.."'", 0) end
     
-    local manifest = getRawFile(tag, "src/InstallerManifest")
-
-    --print(uriCombine("https://raw.githubusercontent.com/", repoName, release))
+    -- Download manifest file
+    print("Downloading manifest")
+    local manifest = getRawFile(tag, "src/InstallerManifest.tbl")
+    if (type(manifest) ~= "string") then error("Failed to download manifest file", 0) end
+    manifest = textutils.unserialize(manifest)
+    print(tostring(#manifest).." files found in manifest")
+    
+    -- Download files from manifest
+    for i=1,#manifest do
+        local path = manifest[i]
+        print("Downloading '"..path.."'")
+        local content = getRawFile(tag, "src/"..path)
+        if (content == nil) then error("GitHub content request failed, try again later", 0) end
+        fs.makeDir(fs.getDir(path))
+        local handle = fs.open(path, "w+")
+        handle.write(content)
+        handle.close()
+    end
+    
+    print("Install complete")
 end
 
 

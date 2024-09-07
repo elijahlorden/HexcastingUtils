@@ -6,69 +6,88 @@
 
 .global cropitem
 .global seeditem
+.global steps
 .global xlen
-.global zlen
 .global endidx
 .global idx
-.global jump
+.global nulljump
 
-//Calculate parameters
+(
+    g!nulljump
 
-get-circle-interior-size
+    //Query storage
+    .include app-nexus-querylist.xth
 
-vector-unwrap   //z y x
-swap            //z x y
-drop            //z x
-2dup g!xlen g!zlen
-mul .1 sub g!endidx
+    //Calculate parameters
 
-.0 g!idx
+    get-circle-interior-size
 
-//Loop over interior positions
+    vector-unwrap   //z y x
+    swap            //z x y
+    drop            //z x
+    dup g!xlen      //z x
+    mul .1 sub g!endidx
 
-( g!jump ) eval/cc
-                            
-g@idx                       //idx
-dup g@zlen mod              //idx z
-over g@xlen div floor       //idx z x
-.1 swap                     //idx z 1 x (offset y by 1)
+    .0 g!idx
 
-vector-wrap get-circle-lower-north-west-interior-position add
+    //Loop over interior positions
 
-dup break-block             //idx pos
+    () eval/cc                  //jump
 
-//Place seeds from nexus and bonemeal
+    g@idx                       //jump idx
 
-g@seeditem hexal:find-motes //idx pos [mote]
-dup length                  //idx pos [mote] length
-.0 ?gt
-(                           //idx pos [mote]
-    list-pop swap drop      //idx pos seed-mote
-    over                    //idx pos seed-mote pos
-    hexal:place-block       //idx pos
-    dup dup                 //idx pos pos pos
-    overgrow overgrow overgrow
-)
-( drop drop ) ? eval        //idx
+    //Check if this iteration needs to pause
 
-//Increment index and execute jump
+    dup g@endidx g@steps div ceil       //jump idx idx endidx/steps
+    mod ceil                            //jump idx idx%(endidx/steps)
+    .0 ?eq
+    (
+        g@nulljump eval/cc //This jumps to the end of the program, leaving a continuation iota on the stack to resume harvesting
+    )
+    () ? eval
 
-.1 add dup g!idx            //idx
-g@endidx                    //idx endidx
-?gt () ( g@jump eval ) ? eval
 
-//store all crop and seed items
+    dup g@xlen div floor        //jump idx z
+    over g@xlen mod floor       //jump idx z x
 
-(    //item
-    dup hexal:item-type           //item itemtype
-    g@seeditem over g@cropitem    //item itemtype seeditem itemtype cropitem
-    ?eq rrot ?eq or               //item ?is-seed-or-crop
-    ( hexal:store-item ) () ? eval
-)
-get-impetus-position
-.256
-zone-items
-map drop
+    .1 swap                     //jump idx z 1 x (offset y by 1)
 
-//Query storage
-.include app-nexus-querylist.xth
+    vector-wrap get-circle-lower-north-west-interior-position add
+
+    dup break-block             //jump idx pos
+
+    //Place seeds from nexus and bonemeal
+
+    g@seeditem hexal:find-motes //jump idx pos [mote]
+    dup length                  //jump idx pos [mote] length
+    .0 ?gt
+    (                           //jump idx pos [mote]
+        list-pop swap drop      //jump idx pos seed-mote
+        over                    //jump idx pos seed-mote pos
+        hexal:place-block       //jump idx pos
+        dup dup                 //jump idx pos pos pos
+        overgrow overgrow overgrow
+    )
+    ( drop drop ) ? eval        //jump idx
+
+    //Increment index and execute jump
+
+    .1 add dup g!idx            //jump idx
+    g@endidx                    //jump idx endidx
+    ?gt ( drop ) ( dup eval ) ? eval
+
+    //store all crop and seed items
+
+    (                                 //item
+        dup hexal:item-type           //item itemtype
+        g@seeditem over g@cropitem    //item itemtype seeditem itemtype cropitem
+        ?eq rrot ?eq or               //item ?is-seed-or-crop
+        ( hexal:store-item ) () ? eval
+    )
+    get-impetus-position
+    .256
+    zone-items
+    map drop
+    
+    ( \( ) list-unwrap eval //This stops any additional hermes slates from causing a mishap
+) eval/cc

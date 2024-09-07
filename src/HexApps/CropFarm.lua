@@ -11,8 +11,10 @@ hexapp.readConfig("hexcropfarm.cfg", {
     seedThreshold = 0,
     dustThreshold = 256,
     checkItemInterval = 10,
+    harvestSteps = 1,
     lastRunTime = 0,
     autorun = false,
+    exportBusLatch = false,
     state = "idle",
     cropCount = 0,
     seedCount = 0
@@ -36,8 +38,8 @@ end
 local statusLabel, mediaLabel, mediaDiffLabel, storageCropLabel, storageSeedLabel
 
 function updateStorageLabels(cropCount, seedCount)
-    storageCropLabel:setText(tostring(cropCount)):setForeground((cropCount < hexapp.configNumber("cropThreshold")) and colors.yellow or colors.white)
-    storageSeedLabel:setText(tostring(seedCount)):setForeground((seedCount < hexapp.configNumber("seedThreshold")) and colors.yellow or colors.white)
+    storageCropLabel:setText(hexapp.formatNumber(cropCount)):setForeground((cropCount < hexapp.configNumber("cropThreshold")) and colors.yellow or colors.white)
+    storageSeedLabel:setText(hexapp.formatNumber(seedCount)):setForeground((seedCount < hexapp.configNumber("seedThreshold")) and colors.yellow or colors.white)
 end
 
 do -- Display Panel
@@ -104,6 +106,7 @@ hexapp.createHeaderLabel(main, "Hex Crop Farm Controller", colors.gray)
 hexapp.createConfigFrame(main, {
     {"cropItem", "Crop Item", "string"},
     {"seedItem", "Seed Item", "string"},
+    {"harvestSteps", "Harvesting Steps", "number"},
     {"dustThreshold", "Media Threshold", "number"},
     {"cropThreshold", "Crop Threshold", "number"},
     {"seedThreshold", "Seed Threshold", "number"},
@@ -119,14 +122,15 @@ function castFarmSpell()
         queryList = {
             hexapp.iotaHexalItemType(hexapp.config("cropItem")),
             hexapp.iotaHexalItemType(hexapp.config("seedItem"))
-        }
+        },
+        steps = hexapp.configNumber("harvestSteps")
     },
     port, impetus)
 end
 
 function castQuerySpell()
     hexapp.castSpellCircle(
-    "app-nexus-querylist.xth",
+    "app-cropfarm-query.xth",
     {
         queryList = {
             hexapp.iotaHexalItemType(hexapp.config("cropItem")),
@@ -138,10 +142,10 @@ end
 
 function processQueryResult(result)
     if (type(result) == "table" and result.queryList ~= nil and type(result.queryList) == "table" and #result.queryList == 2) then
-        local cropCount = result.queryList[1]
+        local cropCount = tonumber(result.queryList[1]) or 0
         hexapp.config("cropCount", cropCount)
         
-        local seedCount = result.queryList[2]
+        local seedCount = tonumber(result.queryList[2]) or 0
         hexapp.config("seedCount", seedCount)
         
         updateStorageLabels(cropCount, seedCount)
@@ -150,10 +154,22 @@ function processQueryResult(result)
     end
 end
 
-local queryIntervalCount = 0
+function mediaLatch()
+    local media = hexapp.getImpetusDust(impetus)
+    local mediaThreshold = hexapp.configNumber("dustThreshold")
+    local maxMedia = mediaThreshold + (mediaThreshold * 0.2)
+    
+    local xLatch = hexapp.configBool("exportBusLatch")
+    local latch = ((xLatch and media < maxMedia) or (media < mediaThreshold))
+    if (latch ~= xLatch) then hexapp.configBool("exportBusLatch", latch); hexapp.writeConfig() end
+    
+    mediaLabel:setText(hexapp.formatNumber(math.floor(media))):setForeground(latch and colors.yellow or colors.white)
+    redstone.setOutput("bottom", latch)
+end
 
 main:addThread():start(function()
     while true do
+        mediaLatch()
         if (impetus.isCasting()) then
             statusLabel:setText("Casting"):setForeground(colors.yellow)
             os.sleep(1)
@@ -171,15 +187,6 @@ main:addThread():start(function()
                 disableAutorun()
             else
                 errLabel:setText("")
-                
-                
-                
-                
-                
-                
-                
-                
-                
                 processQueryResult(result)
             end
             hexapp.configNumber("lastRunTime", os.epoch("utc"))
@@ -190,7 +197,7 @@ main:addThread():start(function()
             hexapp.config("state", "waitQuery")
             hexapp.writeConfig()
         elseif (state == "waitQuery") then
-            local result, mishap = hexapp.getCircleResult("app-nexus-querylist.xth", port, impetus)
+            local result, mishap = hexapp.getCircleResult("app-cropfarm-query.xth", port, impetus)
             if (result == nil) then -- Display error and disable autorun
                 errLabel:setText(mishap)
                 disableAutorun()
@@ -202,9 +209,6 @@ main:addThread():start(function()
             hexapp.config("state", "idle")
             hexapp.writeConfig()
         elseif (state == "idle") then
-            local media = hexapp.getImpetusDust(impetus)
-            local addMedia = (media < hexapp.configNumber("dustThreshold"))
-            mediaLabel:setText(tostring(media)):setForeground(addMedia and colors.yellow or colors.white)
             if (hexapp.config("autorun")) then
                 if (hexapp.config("cropCount") < hexapp.configNumber("cropThreshold") or hexapp.configNumber("seedCount") < hexapp.configNumber("seedThreshold")) then -- Run farm
                         hexapp.config("state", "startFarm")

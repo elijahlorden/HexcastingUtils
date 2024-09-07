@@ -3,15 +3,17 @@
 .include common-words.xth
 .include great-spells.xth
 
-/*get-impetus-position
+//Unpack the list, store the initial globals in the ravenmind, execute the spell
+get-impetus-position
 create-vector-pos-y
 add
 position-entity
 read-entity
 list-unwrap
 write-ravenmind
-eval*/
+eval
 
+//Store the ravenmind after spell completion back into the focus
 get-impetus-position
 create-vector-pos-y
 add

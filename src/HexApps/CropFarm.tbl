@@ -1,5 +1,5 @@
 {
     name = "Crop Farm",
-    hexes = { "app-cropfarm.xth", "app-nexus-querylist.xth" },
+    hexes = { "app-cropfarm.xth", "app-cropfarm-query.xth" },
     params = { }
 }
