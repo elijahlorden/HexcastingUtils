@@ -2,8 +2,26 @@
 
 // ================ Common Words ================ \\
 
+: g@ //(idx - any)
+    read-ravenmind  //idx list
+    swap            //list idx
+    read-list-item  //value
+;
+
+: g! //(any idx - )
+    read-ravenmind  //value idx list
+    swap            //value list idx
+    rot             //list idx value
+    write-list-item //list
+    write-ravenmind
+;
+
 : drop-all //(many - )
     get-stack-size list-wrap-many drop
+;
+
+: drop-if-falsy //(any - any | <nothing>)
+    dup any-to-bool () ( drop ) ? eval
 ;
 
 : caster-raycast-block //( - vector)

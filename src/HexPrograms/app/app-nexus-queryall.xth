@@ -1,0 +1,68 @@
+.include hex.xth
+.include common-words.xth
+.include great-spells.xth
+.include hexal.xth
+.include hexal-words.xth
+.include moreiotas.xth
+
+//NOTE: Designed to be used with the app-CAD-nowriteback.xth circle.  Requires at least 8 Hermes slates.
+
+.global nulljump //Input: List of Hexal item types to query.  Output: Resultant list of quantities
+
+: exit \( g@nulljump eval ;
+
+.init-globals
+
+\{
+    g!nulljump
+    \{                              //[upper lower]
+        hexal:nexus-item-types      //[upper lower] [itemtype]
+        swap                        //[itemtype] [upper lower]
+        over length                 //[itemtype] [upper lower] length-1
+        
+        //Drop all and exit if loweridx > length - 1
+        over list-pop nip over                      //[itemtype] [upper lower] length lower length
+        .1 sub ?gt \{ 2drop drop exit } {} ? eval   //[itemtype] [upper lower] length
+        
+        //Constrain upperidx to length
+        swap list-pop swap                          //[itemtype] length lower [upper lower]
+        .0 read-list-item                           //[itemtype] length lower upper
+        rot 2dup                                    //[itemtype] lower upper length upper length-1
+        
+        ?gt rrot swap                               //[itemtype] lower ?upper-greater length upper
+        ?                                           //[itemtype] lower newupper
+        
+        list-slice                                  //slice
+        
+        //For each itemtype in the list, create a flat list of { itemtype, displayname, recordcount, itemcount } for each itemtype
+        \{                      //itemtype
+            dup                 //itemtype itemtype
+            string:tostring     //itemtype displayname
+            over                //itemtype displayname itemtype
+            hexal:find-motes    //itemtype displayname [mote]
+            
+            dup length dup rrot //itemtype displayname recordcount [mote] recordcount
+            .0 ?eq
+            \{ drop .0 }        //itemtype displayname recordcount itemcount (this should really never happen, but just in case...)
+            \{
+                \{ bk:vvv- length } swap map  //itemtype displayname recordcount [itemcount]
+                hexal:running-sum             //itemtype displayname recordcount [sum]
+                over .1 sub read-list-item    //itemtype displayname recordcount itemcount
+            } ? eval
+            
+        } swap map
+        
+        //Write the list to the focal port
+        get-impetus-position
+        create-vector-pos-y
+        add
+        position-entity
+        over
+        write-entity
+        drop
+        g@nulljump eval/cc //Yield to allow the computer to read this page
+    }
+    \{ { 128 0 } { 256 128 } { 384 256 } { 512 384 } { 640 512 } { 768 640 } { 896 768 } { 1024 896 } }
+    map drop
+    \( 
+} eval/cc

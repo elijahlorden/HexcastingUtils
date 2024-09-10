@@ -119,6 +119,12 @@ local function duckySelectLink(target)
 	end
 end
 
+local function getGlobalIdx(self, name, tkn)
+    local gIdx = self._globals[name]
+    if (gIdx == nil) then tokenErr("Undefined global '"..name.."'", nextToken) end
+    return gIdx - 1
+end
+
 local directives = {
 	
 	["pattern"] = function(self, dirTkn) -- .pattern DIRECTION xxxx
@@ -327,32 +333,29 @@ function Compiler:compile(targetFileName, targetDirectories)
 			self._inlineEscape = false
 		end
 		
-		-- Reading and writing globals
-		if (type(nextToken.value) == "string" and nextToken.value:find("^g[@!]%w+")) then
-			local gName = nextToken.value:sub(3)
-			local gIdx = self._globals[gName]
-			if (gIdx == nil) then tokenErr("Undefined global '"..gName.."'", nextToken) end
-			gIdx = gIdx - 1
+		
+		if (type(nextToken.value) == "string" and nextToken.value:find("^g[@!]%w+")) then -- Reading and writing globals
+			local gIdx = getGlobalIdx(self, nextToken.value:sub(3), nextToken)
+            local idxp = getPredefinedIntPattern(gIdx, nextToken)
 			
 			local patterns = {}
 			
 			local wEscape = getWord(self, "\\", nextToken)
 			local wReadRavenmind = getWord(self, "read-ravenmind", nextToken)
+            for i=1,#wReadRavenmind do table.insert(patterns, wReadRavenmind[i]) end -- read-ravenmind
 			
 			if (nextToken.value:sub(2,2) == "@") then -- Read (read-ravenmind [index of global] read-list-item)
 				local wReadList = getWord(self, "read-list-item", nextToken)
-				
-				for i=1,#wReadRavenmind do table.insert(patterns, wReadRavenmind[i]) end -- read-ravenmind
-				table.insert(patterns, getPredefinedIntPattern(gIdx, nextToken)) -- [index of global]
+                
+				table.insert(patterns, idxp) -- [index of global]
 				for i=1,#wReadList do table.insert(patterns, wReadList[i]) end -- read-list-item
-			else -- Write (read-ravenmind [index of global] \3 stack-permute write-list-item write-ravenmind)
+			else -- Write (read-ravenmind [index of global] rot write-list-item write-ravenmind)
 				local wRot = getWord(self, "rot", nextToken)
 				local wWriteList = getWord(self, "write-list-item", nextToken)
 				local wWriteRavenmind = getWord(self, "write-ravenmind", nextToken)
-				
-				for i=1,#wReadRavenmind do table.insert(patterns, wReadRavenmind[i]) end -- read-ravenmind
-				table.insert(patterns, getPredefinedIntPattern(gIdx, nextToken)) -- [index of global]
-				for i=1,#wRot do table.insert(patterns, wRot[i]) end -- stack-permute
+                
+				table.insert(patterns, idxp) -- [index of global]
+				for i=1,#wRot do table.insert(patterns, wRot[i]) end -- rot
 				for i=1,#wWriteList do table.insert(patterns, wWriteList[i]) end -- write-list-item
 				for i=1,#wWriteRavenmind do table.insert(patterns, wWriteRavenmind[i]) end -- write-ravenmind
 			end
@@ -363,6 +366,10 @@ function Compiler:compile(targetFileName, targetDirectories)
 			else
 				addIotas(self, patterns)
 			end
+        elseif (type(nextToken.value) == "string" and nextToken.value:find("^g#%w+")) then -- Global indexing
+            local gIdx = getGlobalIdx(self, nextToken.value:sub(3), nextToken)
+            autoEscape(self, nextToken)
+            addIota(self, getPredefinedIntPattern(gIdx, nextToken))
 		elseif (type(nextToken.value) == "number") then -- Number literal
 			autoEscape(self, nextToken)
 			addIota(self, { iType = "number", value = nextToken.value })

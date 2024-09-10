@@ -182,6 +182,14 @@
 	.pattern east a //Novice's Gambit
 ;
 
+: 2drop //(any any - )
+	.pattern south_east ada //Bookkeeper's Gambit v
+;
+
+: nip //(any(a) any(b) - any(b))
+    .pattern south_east ae //Bookkeeper's Gambit v-
+;
+
 : swap //(a b - b a)
 	.pattern east aawdd //Jester's Gambit
 ;
@@ -233,6 +241,10 @@
 : 2swap //(a b c d - c d a b)
 	.pattern south_east aqaaqawq //Numeric Reflection: 16
 	stack-permute
+;
+
+: bk:vvv- //(a b c d - d)
+    .pattern east adadae //Bookkeeper's Gambit vvv-
 ;
 
 

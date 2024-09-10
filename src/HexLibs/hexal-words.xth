@@ -1,14 +1,32 @@
 .include hexal.xth
+.include common-words.xth
+
+: hexal:find-mote? //(itemtype - mote | <nothing>)
+    hexal:find-motes		//[mote]
+    dup any-to-bool         //[mote] ?has-mote
+	( //List has a mote
+		list-pop			//[mote] mote
+		nip                 //mote
+	) ( drop ) ? eval
+;
+
+: hexal:find-mote //(itemtype - mote | <nothing>)
+    hexal:find-motes		//[mote]
+    dup any-to-bool         //[mote] ?has-mote
+	( //List has a mote
+		list-pop			//[mote] mote
+		nip                 //mote
+	) ( drop null ) ? eval
+;
 
 : hexal:store-item //(item - mote)
 	dup						//item item
 	hexal:item-type			//item itemtype
 	hexal:find-motes		//item [mote]
-	dup length				//item [mote] listlength
-	.0 ?gt
+    dup any-to-bool
 	( //List has a mote
-		list-pop			//item list mote
-		swap drop			//item mote
+		list-pop			//item list [mote] mote
+		nip                 //item mote
 		hexal:mediafy-item	//mote
 	)
 	( //List doesn't have a mote
@@ -16,3 +34,4 @@
 		hexal:mediafy-item	//mote
 	) ? eval
 ;
+

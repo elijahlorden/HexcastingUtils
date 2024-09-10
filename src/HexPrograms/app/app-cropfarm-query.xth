@@ -1,2 +1,2 @@
 .include app-nexus-querylist.xth
-\{ \( eval } //This stops any additional hermes slates from causing a mishap
+\( //This stops any additional hermes slates from causing a mishap

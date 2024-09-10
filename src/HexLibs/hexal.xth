@@ -285,10 +285,6 @@
 	.pattern east qded //Return Item
 ;
 
-: hexal:mote-itemcount //(mote - number)
-	.pattern north_west qqqqwqqqqqaa //Weighing Purification
-;                       
-
 : hexal:combine-motes //(mote mote - mote)
 	.pattern north_west aqaeqded //Stacking Distillation
 ;

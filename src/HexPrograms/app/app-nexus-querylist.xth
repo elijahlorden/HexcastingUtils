@@ -7,20 +7,20 @@
 .global queryList //Input: List of Hexal item types to query.  Output: Resultant list of quantities
 
 
-(                                           //itemtype
+\{                                          //itemtype
     hexal:find-motes                        //[mote]
     dup length                              //[mote] length
     .0 ?gt
-    ( //Mote exists                         //[mote]
-        ( length ) swap map                 //[number]
+    \{ //Mote exists                         //[mote]
+        \{ length } swap map                 //[number]
         hexal:running-sum                   //[number]
         dup length .1 sub                   //[number] lastidx
         read-list-item                      //sum
-    )
-    ( //Mote does not exist
-        drop .0             //0
-    ) ? eval
-) g@queryList map g!queryList
+    }
+    \{ //Mote does not exist
+        drop .0                             //0
+    } ? eval
+} g@queryList map g!queryList
 
 
 

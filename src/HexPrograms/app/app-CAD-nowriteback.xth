@@ -1,0 +1,18 @@
+.include hex.xth
+.include hexal.xth
+.include common-words.xth
+.include great-spells.xth
+
+//Unpack the list, store the initial globals in the ravenmind, execute the spell
+get-impetus-position
+create-vector-pos-y
+add
+position-entity
+read-entity
+list-unwrap
+write-ravenmind
+
+//Fill the rest of the circle with Hermes
+: e eval ;
+e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e e
+
