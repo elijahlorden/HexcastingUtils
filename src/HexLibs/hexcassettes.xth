@@ -1,0 +1,27 @@
+: hexcassettes:enqueue //(list number any - )
+    .pattern east qeqwqwqwqwqeqaweqqqqqwweeweweewqdwwewewwewweweww
+;
+
+: hexcassettes:dequeue //(any - )
+    .pattern west eqeweweweweqedwqeeeeewwqqwqwqqweawwqwqwwqwwqwqww
+;
+
+: hexcassettes:dequeue-all //( - )
+    .pattern west eqeweweweweqedwqeeeeewwqqwqwqqw
+;
+
+: hexcassettes:threads-count //( - number)
+    .pattern east qeqwqwqwqwqeqaweqqqqq
+;
+
+: hexcassettes:threads-free //( - number)
+    .pattern east qeqwqwqwqwqeqaweqqqqqwweeweweew
+;
+
+: hexcassettes:get-thread-hex //(any - null|list)
+    .pattern west eqeweweweweqedwqeeeee
+;
+
+: hexcassettes:get-thread-delay //(any - null|number)
+    .pattern west eqeweweweweqedwqeeeeedww
+;

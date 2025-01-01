@@ -52,11 +52,23 @@ local Compiler = require("HexUtils/Compiler")
 
 for i=1,#settings.hexes do
     local hexName = settings.hexes[i]
-    print("-- Compiling "..hexName.." --")
+    local hexType = "ducky"
+    if (hexName:find(":")) then
+        local idx = hexName:find(":")
+        hexType = hexName:sub(1, idx-1)
+        hexName = hexName:sub(idx+1)
+    end
+    print("-- Compiling "..hexName.." ("..hexType..")".." --")
     local compiler = Compiler.new()
     compiler:compile(hexName, { "/HexLibs", "/HexPrograms" })
+    
     hexes[hexName] = {
-        hex = compiler:emit(Compiler.EmitMode.DuckyList),
+        hex = compiler:emit(
+            ({
+                ducky = Compiler.EmitMode.DuckyList,
+                hextweaks = Compiler.EmitMode.HexTweaksList
+            })[hexType]
+        ),
         globals = compiler:getGlobals()
     }
 end

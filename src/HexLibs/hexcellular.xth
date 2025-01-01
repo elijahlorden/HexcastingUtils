@@ -1,0 +1,11 @@
+: hexcellular:create-property //( - property)
+    .pattern south_west aawe //Schrödinger's Reflection
+;
+
+: hexcellular:read-property //(property - any)
+    .pattern south_west aawd //Observation Purification
+;
+
+: hexcellular:write-property //(property any - )
+    .pattern south_west aawq //Schrödinger's Gambit
+;

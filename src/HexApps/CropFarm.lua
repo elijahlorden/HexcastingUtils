@@ -167,7 +167,7 @@ function mediaLatch()
     redstone.setOutput("bottom", latch)
 end
 
-main:addThread():start(function()
+hexapp.schedule(function()
     while true do
         mediaLatch()
         if (impetus.isCasting()) then
@@ -240,6 +240,4 @@ main:addThread():start(function()
     end
 end)
 
-
-
-basalt.autoUpdate()
+parallel.waitForAll(hexapp.scheduler.autoUpdate, basalt.autoUpdate)

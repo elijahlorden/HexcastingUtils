@@ -1,0 +1,28 @@
+.include hex.xth
+.include common-words.xth
+.include moreiotas.xth
+.include hexcassettes.xth
+
+.global counter
+.global jump
+.init-globals
+
+//Store the counter and jump iota
+
+\{ .0 g!counter g!jump } eval/cc
+
+//Increment the counter
+
+.1 g@counter add reveal g!counter
+
+//Build a pattern list to restore globals and execute the jump iota
+
+\ \                             //consideration
+read-ravenmind                  //consideration {globals}
+\ write-ravenmind               //consideration {globals} write-ravenmind
+g@jump                          //consideration {globals} write-ravenmind jump
+.4 list-wrap-many               //{consideration {globals} write-ravenmind jump}
+
+//Enqueue the pattern list
+
+.20 \.str "async-test" hexcassettes:enqueue

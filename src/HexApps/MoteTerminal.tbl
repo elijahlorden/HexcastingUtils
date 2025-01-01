@@ -1,5 +1,5 @@
 {
     name = "Mote Terminal",
-    hexes = { "app-nexus-querylist.xth" },
+    hexes = { "app-nexus-querylist.xth", "app-nexus-queryall.xth" },
     params = { }
 }

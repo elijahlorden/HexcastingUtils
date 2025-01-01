@@ -18,7 +18,8 @@ Compiler.EmitMode = {
 	DuckyFocalPortSingle = 4,       -- Write first output iota to a Ducky's Peripherals focal port
 	DuckyLink = 5,                  -- Send the output iotas as a list over an attached focal link
 	DuckyLinkCircleBuilder = 6,     -- Used in conjunction with the circle builder artifact
-    DuckyList = 7                   -- Return the list of emitted iotas
+    DuckyList = 7,                  -- Return the list of emitted iotas
+    HexTweaksList = 8               -- Return the list of emitted iotas, formatted for HexTweaks deser
 }
 
 local numberDirectionMap = {
@@ -31,7 +32,18 @@ local numberDirectionMap = {
 }
 
 local hexalIotaTypes = {
-	["hexcasting:pattern"] = true
+	["hexcasting:pattern"] = true,
+    ["hexcasting:double"] = true,
+    ["hexcasting:null"] = true,
+    ["moreiotas:string"] = true
+}
+
+local hexalIotaTypeAliases = {
+    ["pattern"] = "hexcasting:pattern",
+    ["double"] = "hexcasting:double",
+    ["number"] = "hexcasting:double",
+    ["null"] = "hexcasting:null",
+    ["string"] = "moreiotas:string",
 }
 
 local function splitString(inputstr, sep)
@@ -197,22 +209,30 @@ local directives = {
 		autoEscape(self, dirTkn)
 		addIota(self, { iType = "vector", value = vec, token = dirTkn })
 	end,
-	
-	["bool"] = function(self, dirTkn) -- .bool true|false
-		local tkn, err = self._tokenizer:next()
-		if (err) then error(err, 0) end
-		if (not tkn) then tokenErr(".bool expected string got nil", dirTkn) end
-		local str = tkn.value
-		if (type(str) ~= "string") then tokenErr(".bool expected string, got "..type(str), tkn) end
-		str = str:lower()
-		if (str ~= "true" and str ~= "false") then tokenErr("'"..str.."' is not a valid boolean", tkn) end
+    
+	["vector"] = function(self, dirTkn) -- .vector x y z
+		local vec = {}
+		for i=1,3 do
+			local tkn, err = self._tokenizer:next()
+			if (err) then error(err, 0) end
+			if (not tkn) then tokenErr(".vector expected number, got nil", dirTkn) end
+			local n = tkn.value
+			if (type(n) ~= "number") then tokenErr(".vector expected number, got "..type(n), tkn) end
+			vec[i] = n
+		end
 		autoEscape(self, dirTkn)
-		addIota(self, { iType = "bool", value = (str == "true"), token = dirTkn })
+		addIota(self, { iType = "vector", value = vec, token = dirTkn })
+	end,
+	
+	["null"] = function(self, dirTkn) -- .null
+		autoEscape(self, dirTkn)
+		addIota(self, { iType = "null" })
 	end,
 	
 	["hexal-iotatype"] = function(self, dirTkn) -- .hexal-iotatype [name]
 		local name = getDirArg(self, 1, "string", dirTkn)
 		name = name.value:lower()
+        if (hexalIotaTypeAliases[name]) then name = hexalIotaTypeAliases[name] end
 		if (not hexalIotaTypes[name]) then tokenErr("Unknown iota type, see hexalIotaTypes in HexLibs/compiler.lua", dirTkn) end
 		autoEscape(self, dirTkn)
 		addIota(self, { iType = "hexal:iotatype", value = name, token = dirTkn })
@@ -496,9 +516,57 @@ local function duckyEmit(self, iota, list)
 		table.insert(list, { itemType = iota.value, isItem = false })
 	else
 		if (iota.token) then
-			tokenErr("Iota type '"..iota.iType.."' is not supported for DuckyFocalPort emit", iota.token)
+			tokenErr("Iota type '"..iota.iType.."' is not supported for Ducky emit", iota.token)
 		else
-			error("Iota type '"..iota.iType.."' is not supported for DuckyFocalPort emit", 0)
+			error("Iota type '"..iota.iType.."' is not supported for Ducky emit", 0)
+		end
+	end
+	self._emitCount = self._emitCount + 1
+end
+
+local htTypes = {
+    null = "hextweaks:null",
+    list = "hextweaks:list",
+    pattern = "hextweaks:pattern",
+    iotaType = "hextweaks:iotatype",
+    itemType = "hextweaks:itemtype",
+    entityType = "hextweaks:entitytype",
+    vector3 = "hextweaks:vec3"
+}
+
+local function hexTweaksEmit(self, iota, list)
+	if (iota.iType == "list") then
+		local emitList = { ["iota$serde"] = htTypes.list }
+		for i=1,#iota.value do hexTweaksEmit(self, iota.value[i], emitList) end
+		table.insert(list, emitList)
+	elseif (iota.iType == "pattern") then
+		table.insert(list, { startDir = iota.startDir:upper(), angles = iota.angles, ["iota$serde"] = htTypes.pattern })
+	elseif (iota.iType == "greatSpell") then
+		local pattern = self._greatSpells[iota.value]
+		if (not pattern) then error("Great spell '"..iota.value.."' not found, add it with .AddGreatSpell",0) end
+		table.insert(list, { startDir = pattern.startDir:upper(), angles = pattern.angles, ["iota$serde"] = htTypes.pattern })
+	elseif (iota.iType == "number" or iota.iType == "string" or iota.iType == "bool") then
+		table.insert(list, iota.value)
+    elseif (iota.iType == "#globals") then
+        local pattern = getNumberPattern(self._nGlobals, iota.token)
+        table.insert(list, { startDir = pattern.startDir:upper(), angles = pattern.angles, ["iota$serde"] = htTypes.pattern })
+	--[[elseif (iota.iType == "null") then
+		table.insert(list, { null = true })--]]
+	elseif (iota.iType == "vector") then
+		table.insert(list, { x = iota.value[1], y = iota.value[2], z = iota.value[3], ["iota$serde"] = htTypes.vector3 })
+	elseif (iota.iType == "hexal:iotatype") then
+		table.insert(list, { id = iota.value, ["iota$serde"] = htTypes.iotaType })
+	elseif (iota.iType == "hexal:entitytype") then
+		table.insert(list, { id = iota.value, ["iota$serde"] = htTypes.entityType })
+	elseif (iota.iType == "hexal:itemtype") then
+		table.insert(list, { id = iota.value, type = "item", ["iota$serde"] = htTypes.itemType })
+	elseif (iota.iType == "hexal:blocktype") then
+		table.insert(list, { id = iota.value, type = "block", ["iota$serde"] = htTypes.itemType })
+	else
+		if (iota.token) then
+			tokenErr("Iota type '"..iota.iType.."' is not supported for HexTweaks emit", iota.token)
+		else
+			error("Iota type '"..iota.iType.."' is not supported for HexTweaks emit", 0)
 		end
 	end
 	self._emitCount = self._emitCount + 1
@@ -582,6 +650,12 @@ function Compiler:emit(mode, target)
 		for i=1,#self._emitList do duckyEmit(self, self._emitList[i], duckyList) end
         print("Compiled "..tostring(self._emitCount).." iotas")
         return duckyList
+    elseif (mode == Compiler.EmitMode.HexTweaksList) then
+		local emitList = { ["iota$serde"] = htTypes.list }
+		self._emitCount = 1
+		for i=1,#self._emitList do hexTweaksEmit(self, self._emitList[i], emitList) end
+        print("Compiled "..tostring(self._emitCount).." iotas")
+        return emitList
 	end
 end
 

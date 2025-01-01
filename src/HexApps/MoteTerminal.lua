@@ -8,8 +8,55 @@ hexapp.readConfig("hexmoteterm.cfg", {
     
 })
 
+local tempNexusData = {}
+local nexusData = hexapp.readTable("nexusdata.tbl") -- Schema: { { itemtype, displayname, recordcount, itemcount }, ... }
+function writeNexusData() hexapp.writeTable("nexusdata.tbl", nexusData) end
+
 local basalt = hexapp.getBasalt()
 local main = basalt.createFrame()
+
+local cfsm = hexapp.circleStateMachine.new("moteterm", port, impetus)
+
+cfsm:addSpell("queryall", "app-nexus-queryall.xth")
+
+cfsm:onIota("queryall", function(iota)
+    if (type(iota) == "table" and #iota > 0) then
+        table.insert(tempNexusData, iota)
+    end
+end)
+
+cfsm:onComplete("queryall", function(iota)
+    nexusData = {}
+    for i=1,#tempNexusData do
+        local subtable = tempNexusData[i]
+        for p=1,#subtable do table.insert(nexusData, subtable[p]) end
+    end
+    writeNexusData()
+    basalt.debug("Done! "..tostring(#nexusData).." records")
+end)
+
+hexapp.schedule(function()
+    os.sleep(3)
+    cfsm:cast("queryall", {})
+end)
+
+--[[
+local dg = hexapp.dataGrid.new(main)
+
+dg:setColumns({
+    { name = "itemtype", title = "Item Type", type = "string" },
+    { name = "displayname", title = "Name", type = "string" },
+    { name = "itemcount", title = "Count", type = "number" },
+    { name = "recordcount", title = "# Records", type = "number" }
+})
+
+dg:setKey("itemtype")
+
+local testtbl = {}
+for i=1,50 do local s = tostring(i) table.insert(testtbl, { itemtype = "minecraft:test"..s, displayname = "Test "..s, itemcount = i, recordCount = tostring(Math.floor(i / 10)) }) end
+dg:setData(testtbl)--]]
+
+
 
 -- Write a reusable casting FSM object
 
@@ -23,3 +70,9 @@ local main = basalt.createFrame()
 
 
 
+
+
+
+
+
+parallel.waitForAll(hexapp.scheduler.autoUpdate, basalt.autoUpdate)

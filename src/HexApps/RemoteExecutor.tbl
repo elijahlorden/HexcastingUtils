@@ -1,0 +1,5 @@
+{
+    name = "Remote Executor",
+    hexes = { "hextweaks:app-turtle-test.xth" },
+    params = { }
+}
