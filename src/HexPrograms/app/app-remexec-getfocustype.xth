@@ -1,0 +1,23 @@
+.import hex.xth
+
+read-offhand                    //offhand
+dup hexal:iota-type             //offhand type
+
+//Return Empty if focus is not a list
+
+\.hexal-iotatype number ?neq
+\{
+    drop \.str "Empty"          //Result
+}
+\{
+    //Return Empty if list doesn't contain 2 elements with the first being a string
+    dup length .2 ?eq          //offhand ?length
+    over .0 read-list-item hexal:iota-type \.hexal-iotatype string ?eq
+    and                        //offhand ?length-and-type
+    \{
+        .0 read-list-item       //Result
+    }
+    \{
+        drop \.str "Empty"      //Result
+    } ? eval
+} ? eval

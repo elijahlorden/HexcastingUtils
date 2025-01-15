@@ -374,12 +374,26 @@ end
 -- =========== Basalt Helpers =========== --
 
 function hexapp.getBasalt()
+    if (hexapp._basalt ~= nil) then return hexapp._basalt end
     if (not fs.exists("/basalt.lua")) then
         print("Installing Basalt")
         shell.run("wget run https://basalt.madefor.cc/install.lua packed basalt-1.7.1.lua")
         shell.run("rename basalt-1.7.1.lua basalt.lua")
     end
-    return require("/basalt")
+    hexapp._basalt = require("/basalt")
+    return hexapp._basalt
+end
+
+function hexapp.setFocusRecursive(obj, parent)
+    local q = { obj }
+    while (parent ~= nil) do
+        table.insert(q, parent)
+        obj = parent
+        parent = obj:getParent()
+    end
+    for i=#q,2,-1 do
+        q[i]:setFocusedChild(q[i-1])
+    end
 end
 
 function hexapp.createHeaderLabel(parent, text, background)
@@ -494,19 +508,196 @@ function hexapp.createMomentaryButton(parent, x, y, w, h, text)
     --:onRelease(function(self) self:setBackground(colors.lightBlue) end)
 end
 
+function hexapp.createTerminal(parent, locX, locY, locW, locH)
+    local prompt = ">"
+    local t = {}
+    local h = {}
+    local frame = parent:addFrame():setPosition(locX, locY):setSize(locW, locH)
+    local bar = frame:addScrollbar():setPosition(locW, 1):setSize(1, locH-1):setScrollAmount(1):setBackground(colors.black):setForeground(colors.white)
+    local input = frame:addInput():setInputType("text"):setSize(locW-#prompt, 1):setPosition(1+#prompt, locH)
+    local bOffset = 0
+    local buffer, bufferBG, bufferFG = {}, {}, {}
+    
+    
+    local function setOffset(v)
+        local h = frame:getHeight() - 1
+        if (#buffer < h) then bOffset = 0 return end
+        bOffset = math.max(0, math.min(#buffer - h, v))
+    end
+    
+    local function updateScroll()
+        local overflow = math.max(0, #buffer - bar:getHeight())
+        bar:setScrollAmount(math.max(1, overflow))
+        bar:setSymbolSize(false)
+        if (overflow == 0) then
+            bar:setIndex(1)
+        else
+            local idx = math.max(1, bOffset)
+            idx = (overflow > bar:getHeight()) and math.floor((bOffset / overflow) * bar:getHeight()) or idx
+            bar:setIndex(idx)
+        end
+        
+    end
+    
+    function t:clear()
+        buffer, bufferBG, bufferFG = {}, {}, {}
+        setOffset(0)
+        updateScroll()
+        frame:updateDraw()
+        return self
+    end
+    
+    local function processLine(line)
+        local bg = colors.toBlit(frame:getBackground())
+        local fg = colors.toBlit(frame:getForeground())
+        local outLine, outBG, outFG = {}, {}, {}
+        local i = 1
+        while (i <= #line) do
+            local c = line:sub(i, i)
+            if (c == "&" and i ~= #line) then
+                local nc = line:sub(i+1, i+1)
+                local e = line:find(';', i+1)
+                if (e ~= nil and e > i+3 and nc ~= "&") then
+                    local v = line:sub(i+3, e-1)
+                    if (nc == "f" and colors[v]) then
+                        fg = colors.toBlit(colors[v] or tonumber(fg))
+                    elseif (nc == "b" and colors[v]) then
+                        bg = colors.toBlit(colors[v] or tonumber(bg))
+                    end
+                    i = e
+                end
+            else
+                table.insert(outLine, c)
+                table.insert(outBG, bg)
+                table.insert(outFG, fg)
+            end
+            i = i + 1
+        end
+        return table.concat(outLine), table.concat(outBG), table.concat(outFG)
+    end
+    
+    function t:print(text)
+        for line in (tostring(text).."\n"):gmatch("(.-)\n") do
+            local line, bg, fg = processLine(line)
+            local l = #line
+            while (l > 0) do
+                if (l > locW-1) then
+                    table.insert(buffer, line:sub(1, locW-1))
+                    table.insert(bufferBG, bg:sub(1, locW-1))
+                    table.insert(bufferFG, fg:sub(1, locW-1))
+                    line = line:sub(locW)
+                    l = #line
+                else
+                    table.insert(buffer, line)
+                    table.insert(bufferBG, bg)
+                    table.insert(bufferFG, fg)
+                    break
+                end
+            end
+        end
+        setOffset(math.huge)
+        updateScroll()
+        frame:updateDraw()
+        return self
+    end
+    
+    function t:setBackground(color)
+        frame:setBackground(color)
+        bar:setBackground(color)
+        input:setBackground(color)
+        return self
+    end
+    
+    function t:setForeground(color)
+        frame:setForeground(color)
+        bar:setForeground(color)
+        input:setForeground(color)
+        return self
+    end
+    
+    function t:focus() hexapp.setFocusRecursive(input, frame); return self; end
+    function t:onReturn(callback) table.insert(h, callback) return self; end
+    
+    frame:addDraw("terminalText", function(self)
+        self:addText(1, locH, prompt)
+        if (#buffer == 0) then return end
+        local h = frame:getHeight()
+        local iStart = math.max(1, math.min(bOffset + 1, #buffer))
+        local iEnd = math.min(#buffer, (iStart + h) - 2)
+        --hexapp.getBasalt().debug(""..iStart.." "..iEnd.." "..bOffset.." "..(#buffer))
+        local y = 1
+        for i=iStart,iEnd do
+            --self:addText(1, y, buffer[i])
+            --hexapp.getBasalt().debug(buffer[i])
+            --hexapp.getBasalt().debug(bufferFG[i])
+            --hexapp.getBasalt().debug(bufferBG[i])
+            self:addBlit(1, y, buffer[i], bufferFG[i], bufferBG[i])
+            y = y + 1
+        end
+    end)
+    
+    local function getBarRealIndex()
+        local h,s,i = bar:getHeight(), bar:getScrollAmount(), bar:getIndex()
+        return (s > h) and math.ceil((i/s) * h) or i
+    end
+    
+    bar:addDraw("scrollbar", function(self) -- Override for the defaut scrollbar draw
+        local w,h = self:getSize()
+        self:addTextBox(1, 1, w, h, string.char(127))
+        local scrollAmount = self:getScrollAmount()
+        local symbolSize = math.max(1, math.min(h, self:getSymbolSize()))
+        local realIndex = getBarRealIndex() --(scrollAmount > h) and math.ceil((self:getIndex()/scrollAmount) * h) or self:getIndex() -- This totally wasn't a pain to figure out
+        self:addBackgroundBox(1, realIndex, w, symbolSize, self:getForeground())
+        self:addForegroundBox(1, realIndex, w, symbolSize, self:getBackground())
+        self:addTextBox(1, realIndex, w, symbolSize , " ")
+    end, 999)
+    
+    bar:onChange(function(self, _, value)
+        local realIndex = getBarRealIndex()
+        if (realIndex == 1) then
+            setOffset(0)
+        elseif (realIndex + (bar:getSymbolSize() - 1) >= bar:getHeight()) then
+            setOffset(math.huge)
+        else
+            setOffset(value - 1)
+        end
+        frame:updateDraw()
+    end)
+    
+    frame:onScroll(function(self, event, dir, x, y)
+        setOffset(bOffset + dir)
+        updateScroll()
+        frame:updateDraw()
+    end)
+    
+    frame:onKey(function(self, event, key)
+        if (frame:getFocused() == input) then return end
+        input:keyHandler(event, key)
+        frame:setFocusedChild(input)
+    end)
+    
+    input:onKey(function(self, event, key)
+        if (key ~= keys.enter) then return end
+        local v = input:getValue()
+        for i=1,#h do h[i](v) end
+        hexapp.schedule(function() os.sleep() t:focus() end) -- I found no other way to refocus, since this runs before the internal onKey handler, and onKeyUp does not run after focus is lost
+        input:setValue("")
+    end)
+    
+    return t
+end
 
 -- =========== Turtle Helpers =========== --
 
 hexapp.turtle = {}
 
-function hexapp.turtle.init()
-    -- Mishap listener
-    hexapp.schedule(function()
-        while true do
-            local _, _, mishap = os.pullEvent("mishap")
-            print("MISHAP: "..mishap.."\n")
-        end
-    end)
+function hexapp.turtle.init(advanced, modem)
+    local errs = ""
+    if (not turtle) then errs = errs.."This app must be run on a turtle\n" end
+    if (not term.isColor()) then errs = errs.."This app requires an advanced turtle\n" end
+    if (not peripheral.find("wand")) then errs = errs.."This app requires a wand peripheral\n" end
+    if (not (modem and peripheral.find("modem"))) then errs = errs.."This app requires a modem peripheral\n" end
+    if (errs ~= "") then error(errs, 2) end
 end
 
 function hexapp.turtle.isFocus(slot)
@@ -529,12 +720,20 @@ function hexapp.turtle.castSpell(name, globalValues)
     
     wand.setRavenmind(globalList)
     wand.clearStack()
-    --print(textutils.serialize(hex.hex))
     wand.pushStack(hex.hex)
     wand.runPattern("SOUTH_EAST", "deaqq")
-    --wand.runPattern("EAST", "deeeee")
-    
-    
+end
+
+function hexapp.turtle.pop()
+    local wand = peripheral.find("wand")
+    return wand.popStack()
+end
+
+function hexapp.turtle.readFocus(slot)
+    local wand = peripheral.find("wand")
+    turtle.select(slot)
+    wand.runPattern("EAST", "aqqqqq")
+    return wand.popStack()
 end
 
 -- =========== Misc. Helpers =========== --
