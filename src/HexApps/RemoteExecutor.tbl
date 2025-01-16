@@ -1,5 +1,6 @@
 {
     name = "Remote Executor",
     hexes = { "hextweaks:app-turtle-test.xth" },
+    luaIncludes = { StringEnumerator = "/HexUtils/StringEnumerator.lua" },
     params = { }
 }

@@ -511,7 +511,7 @@ end
 function hexapp.createTerminal(parent, locX, locY, locW, locH)
     local prompt = ">"
     local t = {}
-    local h = {}
+    local hRet, hCmd = {}, {}
     local frame = parent:addFrame():setPosition(locX, locY):setSize(locW, locH)
     local bar = frame:addScrollbar():setPosition(locW, 1):setSize(1, locH-1):setScrollAmount(1):setBackground(colors.black):setForeground(colors.white)
     local input = frame:addInput():setInputType("text"):setSize(locW-#prompt, 1):setPosition(1+#prompt, locH)
@@ -616,7 +616,7 @@ function hexapp.createTerminal(parent, locX, locY, locW, locH)
     end
     
     function t:focus() hexapp.setFocusRecursive(input, frame); return self; end
-    function t:onReturn(callback) table.insert(h, callback) return self; end
+    function t:onReturn(callback) table.insert(hRet, callback) return self; end
     
     frame:addDraw("terminalText", function(self)
         self:addText(1, locH, prompt)
@@ -679,7 +679,7 @@ function hexapp.createTerminal(parent, locX, locY, locW, locH)
     input:onKey(function(self, event, key)
         if (key ~= keys.enter) then return end
         local v = input:getValue()
-        for i=1,#h do h[i](v) end
+        for i=1,#hRet do hRet[i](v) end
         hexapp.schedule(function() os.sleep() t:focus() end) -- I found no other way to refocus, since this runs before the internal onKey handler, and onKeyUp does not run after focus is lost
         input:setValue("")
     end)
@@ -740,4 +740,8 @@ end
 
 function hexapp.formatNumber(n)
   return tostring(n):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+end
+
+function hexapp.parseTokens(str)
+    
 end

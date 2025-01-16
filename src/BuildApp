@@ -3,6 +3,7 @@
     {
         name = "App Name",
         hexes = { "filename.xth" },
+        luaIncludes = { name = "path" },
         params = { { name = "paramname", type = "[string|number]" } }
     }
 --]]
@@ -23,7 +24,8 @@ end
 
 local appFileStartingLua = readFile("/HexUtils/AppBoilerplate.lua")
 
-local appName, folder = ...
+local appName, folder, doMinify = ...
+doMinify = not (doMinify == "false")
 
 local appFilePath = "/HexApps/"..appName..".tbl"
 local appStartupPath = "/HexApps/"..appName..".lua"
@@ -46,31 +48,47 @@ for i=1,#existingFiles do fs.delete(fs.combine(folder, existingFiles[i])) end
 local settings = textutils.unserialize(readFile(appFilePath))
 local startupFile = readFile(appStartupPath)
 
-local hexes = {}
+local hexes, includes = {}, {}
 
 local Compiler = require("HexUtils/Compiler")
 
-for i=1,#settings.hexes do
-    local hexName = settings.hexes[i]
-    local hexType = "ducky"
-    if (hexName:find(":")) then
-        local idx = hexName:find(":")
-        hexType = hexName:sub(1, idx-1)
-        hexName = hexName:sub(idx+1)
+if (type(settings.hexes) == "table") then
+    for i=1,#settings.hexes do
+        local hexName = settings.hexes[i]
+        local hexType = "ducky"
+        if (hexName:find(":")) then
+            local idx = hexName:find(":")
+            hexType = hexName:sub(1, idx-1)
+            hexName = hexName:sub(idx+1)
+        end
+        print("-- Compiling "..hexName.." ("..hexType..")".." --")
+        local compiler = Compiler.new()
+        compiler:compile(hexName, { "/HexLibs", "/HexPrograms" })
+        
+        hexes[hexName] = {
+            hex = compiler:emit(
+                ({
+                    ducky = Compiler.EmitMode.DuckyList,
+                    hextweaks = Compiler.EmitMode.HexTweaksList
+                })[hexType]
+            ),
+            globals = compiler:getGlobals()
+        }
     end
-    print("-- Compiling "..hexName.." ("..hexType..")".." --")
-    local compiler = Compiler.new()
-    compiler:compile(hexName, { "/HexLibs", "/HexPrograms" })
-    
-    hexes[hexName] = {
-        hex = compiler:emit(
-            ({
-                ducky = Compiler.EmitMode.DuckyList,
-                hextweaks = Compiler.EmitMode.HexTweaksList
-            })[hexType]
-        ),
-        globals = compiler:getGlobals()
-    }
+end
+
+local includesText = ""
+
+if (type(settings.luaIncludes) == "table" and next(settings.luaIncludes) ~= nil) then
+    print("-- Adding Lua Includes --")
+    for name,f in pairs(settings.luaIncludes) do
+        if not (f:sub(-4) == ".lua") then error("Lua include '"..f.."' must end in .lua") end
+        if not (fs.exists(f)) then error("Lua file '"..f.."' was not found") end
+        local text = readFile(f)
+        table.insert(includes, "[\""..name.."\"] = (function()\n"..text.."\nend)()") --Wrap file contents in an IIFE
+        print(name.." = "..f)
+    end
+    includesText = table.concat(includes, ",\n")
 end
 
 print("-- Writing Startup File --")
@@ -78,6 +96,13 @@ print("-- Writing Startup File --")
 local smallfolk = require("HexUtils/smallfolk")
 local smallfolkEmbed = ("smallfolk = (function() "..readFile("HexUtils/smallfolk.lua").." end)()"):gsub("\n", " ")
 
-local finalStartupFile = table.concat({appFileStartingLua, "\n\n", smallfolkEmbed, "\n", "hexapp.hexes = smallfolk.loads([===[", smallfolk.dumps(hexes), "]===])", "\n\n", startupFile})
+local finalStartupFile = table.concat({appFileStartingLua, "\n\n", "hexapp.includes = {\n", includesText, "\n}\n", smallfolkEmbed, "\n", "hexapp.hexes = smallfolk.loads([===[", smallfolk.dumps(hexes), "]===])", "\n\n", startupFile})
+print("Output file size: "..(math.ceil(#finalStartupFile/1000)).."kB")
+
+if (doMinify) then
+    local minify = require("HexUtils/Minify")
+    local success, minified = minify(finalStartupFile)
+    if (success) then print("Size after minify: : "..(math.ceil(#minified/1000)).."kB"); finalStartupFile = minified else print("Failed to minify output file") end
+end
 
 writeFile(fs.combine(folder, "startup.lua"), finalStartupFile)
