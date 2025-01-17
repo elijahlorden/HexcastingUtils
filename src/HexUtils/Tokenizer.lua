@@ -178,6 +178,25 @@ Tokenizer.new = function(rootFile, rootDirs)
 	return t
 end
 
+function Tokenizer.fromString(str, name)
+    name = name or "input"
+    if (type(str) ~= "string") then error("Argument 1: expected string, got "..type(str), 2) end
+    
+    local t = setmetatable({
+		_rootFile = name,
+		_files = {},
+		_includedFiles = {},
+		_ctx = nil,
+		_ctxStack = {},
+		_tokenQueue = Queue.new(),
+        _fromString = true
+	}, _meta)
+	
+	table.insert(t._ctxStack, { enum =  StringEnumerator.new(str), filePath = name, line = 1 })
+	
+	return t
+end
+
 function Tokenizer:_nextToken()
 	
 	local foundToken = nil
@@ -192,7 +211,7 @@ function Tokenizer:_nextToken()
 			if (type(token) == "number") then -- Number tokens
 				foundToken = { value = token, file = self._ctx.filePath, line = self._ctx.line }
 			elseif (type(token) == "string") then -- String tokens
-				if (token == ".include") then -- Include directive (.include <filename>)
+				if (not self._fromString and token == ".include") then -- Include directive (.include <filename>)
 					local success, fToken = self:_tkNext()
 					if (not success) then return false, token end
 					if (type(fToken) ~= "string") then return false, ".include expected filename ("..self._ctx.filePath..", line "..self._ctx.line..")" end
@@ -239,11 +258,15 @@ function Tokenizer:peek(idx)
 end
 
 function Tokenizer:hasNext()
-	if (#self._tokenQueue > 0) then return true end
+    local queue = self._tokenQueue
+	if (#queue > 0) then return true end
 	local token, err = self:_nextToken()
 	if (err) then return false, err end
-	queue:insert(token)
-	return true
+    if (token ~= nil) then
+        queue:insert(token)
+        return true
+    end
+    return false
 end
 
 return Tokenizer

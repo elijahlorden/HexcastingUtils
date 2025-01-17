@@ -3,6 +3,7 @@ local hexapp = { _cfg = nil, _cfgName = nil }
 -- =========== Scheduler =========== --
 
 do
+    
     hexapp.scheduler = {}
     local coroutines = {} -- Schema: { { [coroutine], filter } }
     
@@ -740,8 +741,4 @@ end
 
 function hexapp.formatNumber(n)
   return tostring(n):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
-end
-
-function hexapp.parseTokens(str)
-    
 end

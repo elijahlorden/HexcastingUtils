@@ -31,10 +31,16 @@ appTerm:onReturn(function(text)
     elseif (text == "clear") then
         appTerm:clear()
     else
-        appTerm:print(text)
+        local Tokenizer = require("HexUtils/Tokenizer")
+        local tk = Tokenizer.fromString(text, "command")
+        while (tk:hasNext()) do
+            local t = tk:next()
+            appTerm:print(type(t.value)..": "..t.value)
+        end
     end
     
 end)
+
 
 --[[for i=1,50 do
     appTerm:print("Line "..i)

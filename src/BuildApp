@@ -3,7 +3,7 @@
     {
         name = "App Name",
         hexes = { "filename.xth" },
-        luaIncludes = { name = "path" },
+        luaIncludes = { "path", ... },
         params = { { name = "paramname", type = "[string|number]" } }
     }
 --]]
@@ -48,7 +48,7 @@ for i=1,#existingFiles do fs.delete(fs.combine(folder, existingFiles[i])) end
 local settings = textutils.unserialize(readFile(appFilePath))
 local startupFile = readFile(appStartupPath)
 
-local hexes, includes = {}, {}
+local hexes, includes, defaultIncludes = {}, {}, { "/HexUtils/StringEnumerator.lua", "/HexUtils/Queue.lua", "/HexUtils/Tokenizer.lua" }
 
 local Compiler = require("HexUtils/Compiler")
 
@@ -78,17 +78,25 @@ if (type(settings.hexes) == "table") then
 end
 
 local includesText = ""
-
-if (type(settings.luaIncludes) == "table" and next(settings.luaIncludes) ~= nil) then
+do
     print("-- Adding Lua Includes --")
-    for name,f in pairs(settings.luaIncludes) do
+    local included = {}
+    local function addInclude(f)
         if not (f:sub(-4) == ".lua") then error("Lua include '"..f.."' must end in .lua") end
         if not (fs.exists(f)) then error("Lua file '"..f.."' was not found") end
+        local modname = f:sub(1,#f-4)
+        if (included[modname]) then return end
+        included[modname] = true
         local text = readFile(f)
-        table.insert(includes, "[\""..name.."\"] = (function()\n"..text.."\nend)()") --Wrap file contents in an IIFE
-        print(name.." = "..f)
+        if (modname:sub(1,1) == "/") then modname = modname:sub(2) end
+        table.insert(includes, "hexapp.includes[\""..modname.."\"] = (function()\n"..text.."\nend)()") --Wrap file contents in an IIFE
+        print(modname)
     end
-    includesText = table.concat(includes, ",\n")
+    for i=1,#defaultIncludes do addInclude(defaultIncludes[i]) end
+    if (type(settings.luaIncludes) == "table" and next(settings.luaIncludes) ~= nil) then 
+        for i=1,#settings.luaIncludes do addInclude(settings.luaIncludes[i]) end
+    end
+    includesText = table.concat(includes, "\n")
 end
 
 print("-- Writing Startup File --")
@@ -96,7 +104,21 @@ print("-- Writing Startup File --")
 local smallfolk = require("HexUtils/smallfolk")
 local smallfolkEmbed = ("smallfolk = (function() "..readFile("HexUtils/smallfolk.lua").." end)()"):gsub("\n", " ")
 
-local finalStartupFile = table.concat({appFileStartingLua, "\n\n", "hexapp.includes = {\n", includesText, "\n}\n", smallfolkEmbed, "\n", "hexapp.hexes = smallfolk.loads([===[", smallfolk.dumps(hexes), "]===])", "\n\n", startupFile})
+local finalStartupFile = table.concat({
+    appFileStartingLua, "\n\n",
+    [[
+    hexapp.includes = {}
+    table.insert(package.loaders, function(modname)
+        for path,includeObj in pairs(hexapp.includes) do
+            if (#path >= #modname and path:sub(-#modname):lower() == modname:lower()) then return function() return includeObj end end
+        end
+    end)
+    ]], "\n",
+    includesText,
+    smallfolkEmbed, "\n", "hexapp.hexes = smallfolk.loads([===[", smallfolk.dumps(hexes), "]===])", "\n\n",
+    startupFile
+})
+
 print("Output file size: "..(math.ceil(#finalStartupFile/1000)).."kB")
 
 if (doMinify) then
