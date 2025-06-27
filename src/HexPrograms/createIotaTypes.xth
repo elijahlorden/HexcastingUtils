@@ -1,0 +1,52 @@
+.include hex.xth
+.include hexal.xth
+.include moreiotas.xth
+//.include hexcellular
+
+//01 string
+\.str abcd hexal:iota-type
+
+//02 number
+.1 hexal:iota-type
+
+//03 bool
+true hexal:iota-type
+
+//04 list
+\{ } hexal:iota-type
+
+//05 pattern
+\.pattern east www hexal:iota-type
+
+//06 vector3
+create-vector-pos-y hexal:iota-type
+
+//07 iotatype
+create-vector-pos-y hexal:iota-type hexal:iota-type
+
+//08 itemtype
+null
+
+//09 entityType
+get-caster hexal:entity-type hexal:iota-type
+
+//10 matrix
+null
+
+//11 continuation
+{} eval/cc hexal:iota-type
+
+//12 entity
+get-caster hexal:iota-type
+
+//13 gate
+null
+
+//14 mote
+null
+
+//15 cellularProperty
+null
+
+get-stack-size list-wrap-many
+write-offhand

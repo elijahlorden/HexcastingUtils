@@ -329,49 +329,6 @@ do -- Spell circle FSM
 
 end
 
-do  -- Basalt datagrid
-    hexapp.datagrid = {}
-    local dg = {}
-    
-    function dg:setColumns(cols)
-        
-    end
-    function dg:getColumns() return self.columns end
-    
-    
-    function dg:setKey(name)
-        
-    end
-    function dg:getKey() return self.pk end
-    
-    
-    function dg:setData(tbl)
-        
-    end
-    function dg:getData() return self.rows end
-    
-    
-    function dg:update()
-        
-    end
-    
-    function dg:draw()
-        
-    end
-    
-    function dg:setWidth(v) end
-    function dg:setHeight(v) end
-    
-    function hexapp.datagrid.new(parent)
-        local obj = { parent = parent, columns = {}, pk = nil, rows = nil, scrollIdx = 0 }
-        
-        return setmetatable(obj, { __index = dg })
-    end
-end
-
-
-
-
 -- =========== Basalt Helpers =========== --
 
 function hexapp.getBasalt()
@@ -506,7 +463,6 @@ function hexapp.createMomentaryButton(parent, x, y, w, h, text)
     :setVerticalAlign("center")
     :setBackground(colors.lightBlue)
     :onClick(function(b) b:setBackground(colors.blue); hexapp.setTimeout(0.1, function() b:setBackground(colors.lightBlue) end) end)
-    --:onRelease(function(self) self:setBackground(colors.lightBlue) end)
 end
 
 function hexapp.createTerminal(parent, locX, locY, locW, locH)
@@ -578,8 +534,8 @@ function hexapp.createTerminal(parent, locX, locY, locW, locH)
     end
     
     function t:print(text)
-        for line in (tostring(text).."\n"):gmatch("(.-)\n") do
-            local line, bg, fg = processLine(line)
+        for rawLine in (tostring(text).."\n"):gmatch("(.-)\n") do
+            local line, bg, fg = processLine(rawLine)
             local l = #line
             while (l > 0) do
                 if (l > locW-1) then
@@ -587,6 +543,8 @@ function hexapp.createTerminal(parent, locX, locY, locW, locH)
                     table.insert(bufferBG, bg:sub(1, locW-1))
                     table.insert(bufferFG, fg:sub(1, locW-1))
                     line = line:sub(locW)
+                    bg = bg:sub(locW)
+                    fg = fg:sub(locW)
                     l = #line
                 else
                     table.insert(buffer, line)
@@ -625,19 +583,14 @@ function hexapp.createTerminal(parent, locX, locY, locW, locH)
         local h = frame:getHeight()
         local iStart = math.max(1, math.min(bOffset + 1, #buffer))
         local iEnd = math.min(#buffer, (iStart + h) - 2)
-        --hexapp.getBasalt().debug(""..iStart.." "..iEnd.." "..bOffset.." "..(#buffer))
         local y = 1
         for i=iStart,iEnd do
-            --self:addText(1, y, buffer[i])
-            --hexapp.getBasalt().debug(buffer[i])
-            --hexapp.getBasalt().debug(bufferFG[i])
-            --hexapp.getBasalt().debug(bufferBG[i])
             self:addBlit(1, y, buffer[i], bufferFG[i], bufferBG[i])
             y = y + 1
         end
     end)
     
-    local function getBarRealIndex()
+    local function getBarRealIndex() -- This totally wasn't a pain to figure out
         local h,s,i = bar:getHeight(), bar:getScrollAmount(), bar:getIndex()
         return (s > h) and math.ceil((i/s) * h) or i
     end
@@ -647,7 +600,7 @@ function hexapp.createTerminal(parent, locX, locY, locW, locH)
         self:addTextBox(1, 1, w, h, string.char(127))
         local scrollAmount = self:getScrollAmount()
         local symbolSize = math.max(1, math.min(h, self:getSymbolSize()))
-        local realIndex = getBarRealIndex() --(scrollAmount > h) and math.ceil((self:getIndex()/scrollAmount) * h) or self:getIndex() -- This totally wasn't a pain to figure out
+        local realIndex = getBarRealIndex()
         self:addBackgroundBox(1, realIndex, w, symbolSize, self:getForeground())
         self:addForegroundBox(1, realIndex, w, symbolSize, self:getBackground())
         self:addTextBox(1, realIndex, w, symbolSize , " ")
@@ -689,8 +642,25 @@ function hexapp.createTerminal(parent, locX, locY, locW, locH)
 end
 
 -- =========== Turtle Helpers =========== --
-
 hexapp.turtle = {}
+do
+    local types = {
+        null = "hextweaks:null",
+        list = "hextweaks:list",
+        pattern = "hextweaks:pattern",
+        iotaType = "hextweaks:iotatype",
+        itemType = "hextweaks:itemtype",
+        entityType = "hextweaks:entitytype",
+        vector3 = "hextweaks:vec3",
+        string = "moreiotas:string",
+        number = "",
+        bool = "",
+    }
+    hexapp.htTypes = types
+    function hexapp.turtle.createListIota(tbl)
+        
+    end
+end
 
 function hexapp.turtle.init(advanced, modem)
     local errs = ""
@@ -699,6 +669,7 @@ function hexapp.turtle.init(advanced, modem)
     if (not peripheral.find("wand")) then errs = errs.."This app requires a wand peripheral\n" end
     if (not (modem and peripheral.find("modem"))) then errs = errs.."This app requires a modem peripheral\n" end
     if (errs ~= "") then error(errs, 2) end
+    -- 
 end
 
 function hexapp.turtle.isFocus(slot)
@@ -722,7 +693,7 @@ function hexapp.turtle.castSpell(name, globalValues)
     wand.setRavenmind(globalList)
     wand.clearStack()
     wand.pushStack(hex.hex)
-    wand.runPattern("SOUTH_EAST", "deaqq")
+    wand.runPattern("SOUTH_EAST", "deaqq") -- eval
 end
 
 function hexapp.turtle.pop()
@@ -733,12 +704,37 @@ end
 function hexapp.turtle.readFocus(slot)
     local wand = peripheral.find("wand")
     turtle.select(slot)
-    wand.runPattern("EAST", "aqqqqq")
-    return wand.popStack()
+    wand.runPattern("EAST", "aqqqqqe") -- ?read-offhand
+    if (wand.popStack()) then
+        wand.runPattern("EAST", "aqqqqq") -- read-offhand
+        return wand.popStack()
+    end
+    return nil
 end
 
+function hexapp.turtle.writeFocus(slot, value)
+    local wand = peripheral.find("wand")
+    turtle.select(slot)
+    wand.pushStack(value)
+    wand.runPattern("EAST", "deeeee") -- write-offhand
+end
+
+function hexapp.turtle.runPattern(startDir, angles)
+    local wand = peripheral.find("wand")
+    wand.runPattern(startDir, angles)
+    return hexapp.turtle.runPattern
+end
 -- =========== Misc. Helpers =========== --
 
 function hexapp.formatNumber(n)
   return tostring(n):reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+end
+
+function hexapp.createId()
+    local ranges = { { 0x30, 0x39 }, { 0x41, 0x5a }, { 0x61, 0x7a } }
+    local r = math.random
+    return string.gsub('xxxxxxxxxxxx', 'x', function()
+        local range = ranges[r(1,#ranges)]
+        return string.char(r(range[1], range[2]))
+    end)
 end
