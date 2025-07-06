@@ -1,0 +1,50 @@
+.include hex.xth
+.include common-words.xth
+.include hexcellular.xth
+.include moreiotas.xth
+
+.global tx
+.global rx
+
+\.str "$" str:set-chat-prefix //Set the caster's chat prefix
+
+//Construct an escaped list containing 2 new hexcellular properties.  These will become the baked-in globals of the CAD artifact.
+\ \
+: p hexcellular:create-property ; p p
+.2 list-wrap-many
+.2 list-wrap-many
+
+\{
+    write-ravenmind //set globals from preconstructed list
+	?caster-sneaking
+	\{
+        str:get-caster-chat
+        dup \.str "_writelink" ?eq
+        \{ //Special command to write a link focus in the format of { rx, tx, playername } (from reader's perspective tx and rx are reversed)
+            drop
+            read-ravenmind
+            get-caster str:entity-name
+            list-push
+            write-offhand
+        }
+        \{ //Otherwise write tx and clear rx
+            g@tx swap hexcellular:write-property
+            g@rx null hexcellular:write-property
+        } ? eval
+	}
+	\{
+		g@rx hexcellular:read-property
+        dup type:iota-type \.iotatype string ?eq \ reveal //Reveal the result if it's a string
+        \{
+            dup type:iota-type \.iotatype list ?eq \ eval //Execute the result if it's a list
+            \{
+                type:iota-type str:tostring \.str "Invalid response type: " swap add reveal
+            } ? eval
+        } ? eval
+	} ? eval
+}
+add //Add the escaped list to the start of the CAD hex
+
+caster-raycast-entity
+swap
+write-artifact

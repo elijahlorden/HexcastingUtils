@@ -1,0 +1,30 @@
+.include hex.xth
+.include moreiotas.xth
+.include hexcellular.xth
+
+
+\ false
+
+\{                      // \false nulljump
+    .2 list-wrap-many   // { \false nulljump }
+    write-ravenmind //store exit function
+    
+    //Return if offhand unreadable
+    ?read-offhand {} read-ravenmind ? eval
+    
+    read-offhand
+    
+    //Return if offhand iota is not a list with at least 3 elements
+    dup type:iota-type \.iotatype list ?eq {} read-ravenmind ? eval
+    dup length .3 ?geq {} read-ravenmind ? eval
+    
+    dup .0 read-list-item
+    dup type:iota-type \.iotatype property ?eq {} read-ravenmind ? eval
+    
+    dup hexcellular:read-property //Read the property
+    dup type:iota-type \.iotatype string ?eq \{ swap null hexcellular:write-property } read-ravenmind ? eval //Clear the property if continuing
+    
+    over .2 read-list-item
+    true //Return "received string" "caster name" true
+    
+} eval/cc

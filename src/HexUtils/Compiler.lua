@@ -35,15 +35,19 @@ local hexalIotaTypes = {
 	["hexcasting:pattern"] = true,
     ["hexcasting:double"] = true,
     ["hexcasting:null"] = true,
-    ["moreiotas:string"] = true
+    ["hexcasting:list"] = true,
+    ["moreiotas:string"] = true,
+    ["hexcellular:property"] = true,
 }
 
 local hexalIotaTypeAliases = {
     ["pattern"] = "hexcasting:pattern",
     ["double"] = "hexcasting:double",
     ["number"] = "hexcasting:double",
+    ["list"] = "hexcasting:list",
     ["null"] = "hexcasting:null",
     ["string"] = "moreiotas:string",
+    ["property"] = "hexcellular:property",
 }
 
 local function splitString(inputstr, sep)
@@ -229,31 +233,31 @@ local directives = {
 		addIota(self, { iType = "null" })
 	end,
 	
-	["hexal-iotatype"] = function(self, dirTkn) -- .hexal-iotatype [name]
+	["iotatype"] = function(self, dirTkn) -- .iotatype [name]
 		local name = getDirArg(self, 1, "string", dirTkn)
 		name = name.value:lower()
         if (hexalIotaTypeAliases[name]) then name = hexalIotaTypeAliases[name] end
 		if (not hexalIotaTypes[name]) then tokenErr("Unknown iota type, see hexalIotaTypes in HexLibs/compiler.lua", dirTkn) end
 		autoEscape(self, dirTkn)
-		addIota(self, { iType = "hexal:iotatype", value = name, token = dirTkn })
+		addIota(self, { iType = "moreiotas:iotatype", value = name, token = dirTkn })
 	end,
 	
-	["hexal-entitytype"] = function(self, dirTkn) -- .hexal-entitytype [name]
+	["entitytype"] = function(self, dirTkn) -- .entitytype [name]
 		local name = getDirArg(self, 1, "string", dirTkn)
 		autoEscape(self, dirTkn)
-		addIota(self, { iType = "hexal:entitytype", value = name.value, token = dirTkn })
+		addIota(self, { iType = "moreiotas:entitytype", value = name.value, token = dirTkn })
 	end,
 	
-	["hexal-itemtype"] = function(self, dirTkn) -- .hexal-itemtype [name]
+	["itemtype"] = function(self, dirTkn) -- .itemtype [name]
 		local name = getDirArg(self, 1, "string", dirTkn)
 		autoEscape(self, dirTkn)
-		addIota(self, { iType = "hexal:itemtype", value = name.value, token = dirTkn })
+		addIota(self, { iType = "moreiotas:itemtype", value = name.value, token = dirTkn })
 	end,
 	
-	["hexal-blocktype"] = function(self, dirTkn) -- .hexal-itemtype [name]
+	["blocktype"] = function(self, dirTkn) -- .itemtype [name]
 		local name = getDirArg(self, 1, "string", dirTkn)
 		autoEscape(self, dirTkn)
-		addIota(self, { iType = "hexal:blocktype", value = name.value, token = dirTkn })
+		addIota(self, { iType = "moreiotas:blocktype", value = name.value, token = dirTkn })
 	end,
 	
 	["escape-on"] = function(self, dirTkn) -- Enable auto-escaping literal iotas.  Requires the 'push-iota' word to be defined.
@@ -506,13 +510,13 @@ local function duckyEmit(self, iota, list)
 		table.insert(list, { null = true })
 	elseif (iota.iType == "vector") then
 		table.insert(list, { x = iota.value[1], y = iota.value[2], z = iota.value[3] })
-	elseif (iota.iType == "hexal:iotatype") then
+	elseif (iota.iType == "moreiotas:iotatype") then
 		table.insert(list, { iotaType = iota.value })
-	elseif (iota.iType == "hexal:entitytype") then
+	elseif (iota.iType == "moreiotas:entitytype") then
 		table.insert(list, { entityType = iota.value })
-	elseif (iota.iType == "hexal:itemtype") then
+	elseif (iota.iType == "moreiotas:itemtype") then
 		table.insert(list, { itemType = iota.value, isItem = true })
-	elseif (iota.iType == "hexal:blocktype") then
+	elseif (iota.iType == "moreiotas:blocktype") then
 		table.insert(list, { itemType = iota.value, isItem = false })
 	else
 		if (iota.token) then
@@ -554,13 +558,13 @@ local function hexTweaksEmit(self, iota, list)
 		table.insert(list, { null = true })--]]
 	elseif (iota.iType == "vector") then
 		table.insert(list, { x = iota.value[1], y = iota.value[2], z = iota.value[3], ["iota$serde"] = htTypes.vector3 })
-	elseif (iota.iType == "hexal:iotatype") then
+	elseif (iota.iType == "moreiotas:iotatype") then
 		table.insert(list, { id = iota.value, ["iota$serde"] = htTypes.iotaType })
-	elseif (iota.iType == "hexal:entitytype") then
+	elseif (iota.iType == "moreiotas:entitytype") then
 		table.insert(list, { id = iota.value, ["iota$serde"] = htTypes.entityType })
-	elseif (iota.iType == "hexal:itemtype") then
+	elseif (iota.iType == "moreiotas:itemtype") then
 		table.insert(list, { id = iota.value, type = "item", ["iota$serde"] = htTypes.itemType })
-	elseif (iota.iType == "hexal:blocktype") then
+	elseif (iota.iType == "moreiotas:blocktype") then
 		table.insert(list, { id = iota.value, type = "block", ["iota$serde"] = htTypes.itemType })
 	else
 		if (iota.token) then

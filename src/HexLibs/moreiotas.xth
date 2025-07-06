@@ -1,85 +1,123 @@
+// ================ Types ================ \\
+
+
+: type:iota-type //(any - iotatype)
+	.pattern south_west awd
+;
+
+: type:entity-type //(entity - entitytype)
+	.pattern south_west qawde
+;
+
+: type:item-type //(itemtypable - itemtype)
+	.pattern east qaqqaea
+;
+
+: type:offhand-type //( - itemtype)
+	.pattern south_west edeedqd
+;
+
+: type:get-entity-of-type //(entitytype vector - entity|null)
+	.pattern north_east dadqqqqqdad
+;
+
+: type:zone-type //(entitytype vector number - [entity])
+	.pattern south_east waweeeeewaw
+;
+
+: type:zone-not-type //(entitytype vector number - [entity])
+	.pattern north_east wdwqqqqqwdw
+;
+
 // ================ Matrices ================ \\
 
 
 
 
-// ================ Strings ================ \\
+// ================ strings ================ \\
 
-
-: str:concat //(string string - string)
-	
+: str:concat //(str str - str)
+    .pattern north_east waaw //Additive Distillation
 ;
 
-: str:split //(string string(delimeter) - string)
-
+: str:split //(str str(delimeter) - str)
+    .pattern east aqwaqa //Separation Distillation
 ;
 
-: str:tonumber //(string - number|null)
-
+: str:tonumber //(str - number|null)
+    .pattern east aqwaq //Input Purification
 ;
 
-: str:indexof //(string string - string)
-
+: str:indexof //(str str - str)
+    .pattern east dedqde //Locator's Distillation
 ;
 
-: str:substring //(string number(start) number(stop) - string)
-
+: str:substr //(str number(start) number(stop) - str)
+    .pattern north_west deeed //Selection Distillation
 ;
 
-: str:length //(string - number)
-
+: str:length //(str - number)
+    .pattern north_east wqaqw //Length Purification
 ;
 
-: str:create-empty //( - string)
-
+: str:empty //( - str)
+    .pattern south_east awdwa //Blank Reflection
 ;
 
-: str:create-space //( - string)
-
+: str:space //( - str)
+    .pattern south_east awdwaaww //Spacing Reflection
 ;
 
-: str:create-newline //( - string)
-
+: str:comma //( - str)
+    .pattern east qa //Comma Reflection
 ;
 
-: str:get-chat-anyone //( - string)
-
+: str:newline //( - str)
+    .pattern east waawaw //Breaking Reflection
 ;
 
-: str:set-chat-prefix //(string|null - )
-
+: str:get-chat //( - str)
+    .pattern east wded //Whisper Reflection
 ;
 
-: str:get-chat-prefix //( - string|null)
-
+: str:get-caster-chat //( - str)
+    .pattern east waqa //Listener's Reflection
 ;
 
-: str:read-block //(vector - string|[string])
-
+: str:set-chat-prefix //(str|null - )
+    .pattern north_east qwaqa //Sifter's Gambit
 ;
 
-: str:write-block //(vector string|[string] - )
-
+: str:get-chat-prefix //( - str|null)
+    .pattern south_east ewded //Sifter's Reflection
 ;
 
-: string:tostring //(any - string)
-	.pattern east wawqwawaw
+: str:read-block //(vector - str|[str])
+    .pattern east awqwawqe //Reader's Purification
 ;
 
-: string:pattern-name //(pattern - string|null)
-
+: str:write-block //(vector str|[str] - )
+    .pattern east dwewdweq //Write
 ;
 
-: string:entity-name //(entity - string)
-
+: str:tostring //(any - str)
+	.pattern east wawqwawaw //Scrivener's Purification
 ;
 
-: string:set-entity-name //(string entity - )
-
+: str:pattern-name //(pattern - str|null)
+    .pattern north_west wdwewdwdw //Patternmaster's Purification
 ;
 
-: string:case //(string bool|null - string)
+: str:entity-name //(entity - str)
+    .pattern south_east deqqeddqwqqqwq //Moniker Purification
+;
 
+: str:set-entity-name //(str entity - )
+    .pattern south_west aqeeqaaeweeewe //Name
+;
+
+: str:case //(str bool|null - str)
+    .pattern west dwwdwwdwdd //Case Distillation
 ;
 
 

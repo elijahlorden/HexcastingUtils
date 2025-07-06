@@ -112,6 +112,7 @@ local finalStartupFile = table.concat({
         for path,includeObj in pairs(hexapp.includes) do
             if (#path >= #modname and path:sub(-#modname):lower() == modname:lower()) then return function() return includeObj end end
         end
+        return nil, "Failed to find HexUtils module "..modname
     end)
     ]], "\n",
     includesText,
@@ -123,8 +124,8 @@ print("Output file size: "..(math.ceil(#finalStartupFile/1000)).."kB")
 
 if (doMinify) then
     local minify = require("HexUtils/Minify")
-    local success, minified = minify(finalStartupFile)
-    if (success) then print("Size after minify: : "..(math.ceil(#minified/1000)).."kB"); finalStartupFile = minified else print("Failed to minify output file") end
+    local success, result = minify(finalStartupFile)
+    if (success) then print("Size after minify: : "..(math.ceil(#result/1000)).."kB"); finalStartupFile = result else print("Failed to minify output file: "..result) end
 end
 
 writeFile(fs.combine(folder, "startup.lua"), finalStartupFile)

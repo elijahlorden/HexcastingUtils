@@ -1,11 +1,8 @@
 local defer = require("HexUtils/defer")
 
-local Promise = { _ucHandlers = {} }
+local pending, resolving, resolved, rejecting, rejected = 0, 1, 2, 3, 4
 
-local pending, resolved, rejected = 0, 1, 2
-Promise.pending = pending
-Promise.resolved = resolved
-Promise.rejected = rejected
+local Promise = { _ucHandlers = {}, pending = pending, resolving = resolving, resolved = resolved, rejecting = rejecting, rejected = rejected }
 
 Promise.onUncaught = function(callback)
     table.insert(Promise._ucHandlers, callback)
@@ -20,7 +17,7 @@ local function fireCallbacks(p)
     if (p.state == resolved) then
         local cbs = p._callbacks
         while (#cbs > 0) do
-            table.remove(cbs, #cbs)(v)
+            table.remove(cbs, #cbs)(table.unpack(v))
         end
     elseif (p.state == rejected) then
         local cbs = p._errCallbacks
@@ -30,21 +27,22 @@ local function fireCallbacks(p)
     end
 end
 
-local function setState(p, state, val)
+local function settle(p, state, val)
     p.state = state
     p.value = val
     fireCallbacks(p)
-    if (p._awaited) then os.queueEvent("promise_complete", p.id) end
+    --if (p._awaited) then os.queueEvent("promise_complete", p.id) end
+    os.queueEvent("promise_complete", p.id)
 end
 
 function Promise:next(callback, errCallback)  -- :next(function(...) end, [function(err) end]) -> new promise
     local p = self
     return Promise.new(function(resolve, reject)
     
-        table.insert(p._callbacks, function(val)
-            if (callback == nil) then resolve(val); return end
+        table.insert(p._callbacks, function(...)
+            if (callback == nil) then resolve(...); return end
             local traceback = nil
-            local ok, err = xpcall(function(val) resolve(callback(val)) end, function() traceback = debug.traceback() end, val)
+            local ok, err = xpcall(function(...) resolve(callback(...)) end, function() traceback = debug.traceback() end, ...)
             if (not ok) then reject(err, traceback) end
         end)
         
@@ -59,32 +57,36 @@ function Promise:next(callback, errCallback)  -- :next(function(...) end, [funct
     end)
 end
 
-function Promise:resolve(val) -- TODO: Defer this
+function Promise:resolve(val, ...) -- TODO: Defer this
     if (self.state ~= pending) then return end
+    self.state = resolving
     if (isPromise(val)) then
         local p = self
-        val:next(function(val2) p:resolve(val2) end, function(err, traceback) p:reject(err, traceback) end)
+        val:next(function(...) p:resolve(...) end, function(...) p:reject(...) end)
         return
     else
-        setState(self, resolved, val)
+        settle(self, resolved, table.pack(val, ...))
     end
 end
 
 function Promise:reject(err, traceback) -- TODO: Defer this
     if (self.state ~= pending) then return end
+    self.state = rejecting
     if (isPromise(err)) then
         local p = self
         err:next(function(val2) p:resolve(val2) end, function(err, traceback) p:reject(err, traceback) end)
         return
     else
         self.traceback = traceback or debug.traceback()
-        setState(self, rejected, err)
+        settle(self, rejected, err)
     end
 end
 
 function Promise:catch(errCallback) return self:next(nil, errCallback) end
 
 function Promise:finally(cb) return self:next(function(...) cb(); return ... end, function(err, traceback) cb(); error(err, traceback) end) end
+
+function Promise:getValue() if (self.state ~= resolved) then error("Attempted :getValue() on unresolved promise", 2) end; return table.unpack(self.value) end
 
 function Promise:await()
     if (self.state == pending) then
@@ -94,7 +96,7 @@ function Promise:await()
         until id == self.id
     end
     if (self.state == resolved) then
-        return self.value
+        return self:getValue()
     elseif (self.state == rejected and self.traceback) then
         error(tostring(self.value).." (Promise trace: "..self.traceback..")", 2)
     elseif (self.state == rejected) then
@@ -108,7 +110,7 @@ Promise.new = function(callback) -- .new(function(promise) end) -> promise
     p.id = tonumber(s:sub(s:find(" ") + 1), 16) -- Get the table ID for this promise object
     setmetatable(p, mt)
     if (type(callback) == "function") then
-        local ok, err = pcall(callback, function(val) p:resolve(val) end, function(err, traceback) p:reject(err, traceback) end)
+        local ok, err = pcall(callback, function(...) p:resolve(...) end, function(...) p:reject(...) end)
         if not ok then p:reject(err) end
     end
     return p
@@ -123,8 +125,8 @@ Promise.all = function(arr)
             local p = arr[i]
             if (isPromise(p)) then
                 p:next(
-                    function(val)
-                        table.insert(res, val)
+                    function(...)
+                        table.insert(res, table.pack(...))
                         nResolved = nResolved + 1
                         if (nResolved >= #arr) then resolve(res) end
                     end, reject

@@ -1,9 +1,12 @@
 {
     name = "Remote Executor",
     hexes = {
-        "hextweaks:app-turtle-test.xth"
     },
     luaIncludes = {
+        "HexUtils/Defer.lua",
+        "HexUtils/Promise.lua",
+        "HexUtils/CastingTurtle.lua",
+        "HexUtils/CompilerProtocol.lua"
     },
     params = { }
 }

@@ -560,6 +560,8 @@ function hexapp.createTerminal(parent, locX, locY, locW, locH)
         return self
     end
     
+    function t:printError(text) return self:print("&f:red;"..tostring(text)) end
+    
     function t:setBackground(color)
         frame:setBackground(color)
         bar:setBackground(color)
@@ -641,89 +643,6 @@ function hexapp.createTerminal(parent, locX, locY, locW, locH)
     return t
 end
 
--- =========== Turtle Helpers =========== --
-hexapp.turtle = {}
-do
-    local types = {
-        null = "hextweaks:null",
-        list = "hextweaks:list",
-        pattern = "hextweaks:pattern",
-        iotaType = "hextweaks:iotatype",
-        itemType = "hextweaks:itemtype",
-        entityType = "hextweaks:entitytype",
-        vector3 = "hextweaks:vec3",
-        string = "moreiotas:string",
-        number = "",
-        bool = "",
-    }
-    hexapp.htTypes = types
-    function hexapp.turtle.createListIota(tbl)
-        
-    end
-end
-
-function hexapp.turtle.init(advanced, modem)
-    local errs = ""
-    if (not turtle) then errs = errs.."This app must be run on a turtle\n" end
-    if (not term.isColor()) then errs = errs.."This app requires an advanced turtle\n" end
-    if (not peripheral.find("wand")) then errs = errs.."This app requires a wand peripheral\n" end
-    if (not (modem and peripheral.find("modem"))) then errs = errs.."This app requires a modem peripheral\n" end
-    if (errs ~= "") then error(errs, 2) end
-    -- 
-end
-
-function hexapp.turtle.isFocus(slot)
-    local item = turtle.getItemDetail(slot)
-    return item and (item.name == "hexcasting:focus")
-end
-
-function hexapp.turtle.castSpell(name, globalValues)
-    local wand = peripheral.find("wand")
-    local hex = hexapp.getHex(name)
-    local globalList = {}
-    
-    for i,p in pairs(hex.globals) do
-        if (globalValues[i] ~= nil) then
-            globalList[p] = globalValues[i]
-        else
-            globalList[p] = nil
-        end
-    end
-    
-    wand.setRavenmind(globalList)
-    wand.clearStack()
-    wand.pushStack(hex.hex)
-    wand.runPattern("SOUTH_EAST", "deaqq") -- eval
-end
-
-function hexapp.turtle.pop()
-    local wand = peripheral.find("wand")
-    return wand.popStack()
-end
-
-function hexapp.turtle.readFocus(slot)
-    local wand = peripheral.find("wand")
-    turtle.select(slot)
-    wand.runPattern("EAST", "aqqqqqe") -- ?read-offhand
-    if (wand.popStack()) then
-        wand.runPattern("EAST", "aqqqqq") -- read-offhand
-        return wand.popStack()
-    end
-    return nil
-end
-
-function hexapp.turtle.writeFocus(slot, value)
-    local wand = peripheral.find("wand")
-    turtle.select(slot)
-    wand.pushStack(value)
-    wand.runPattern("EAST", "deeeee") -- write-offhand
-end
-
-function hexapp.turtle.runPattern(startDir, angles)
-    local wand = peripheral.find("wand")
-    wand.runPattern(startDir, angles)
-    return hexapp.turtle.runPattern
-end
 -- =========== Misc. Helpers =========== --
 
 function hexapp.formatNumber(n)
